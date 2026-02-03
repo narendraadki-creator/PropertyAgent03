@@ -4,7 +4,8 @@ import {
   TrendingUp, TrendingDown, Users, ClipboardList, CheckCircle,
   AlertTriangle, Clock, Target, ArrowRight, Eye, Bell
 } from 'lucide-react';
-import ManagerBottomNavigation from '../components/ManagerBottomNavigation';
+import RoleBasedLayout from '../components/RoleBasedLayout';
+import { mockCurrentUser } from '../data/mockData';
 
 const ManagerDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -172,10 +173,13 @@ const ManagerDashboard: React.FC = () => {
     }
   };
 
+  const managerUser = { ...mockCurrentUser, role: 'manager' as const };
+
   return (
-    <div className="min-h-screen bg-neutral-50 pb-20">
-      {/* Header */}
-      <div className="bg-white border-b border-neutral-100 sticky top-0 z-40">
+    <RoleBasedLayout user={managerUser} showRoleSwitcher={true}>
+      <div className="min-h-screen bg-neutral-50 pb-20">
+        {/* Header */}
+        <div className="bg-white border-b border-neutral-100 sticky top-0 z-40">
         <div className="px-4 py-4">
           <div className="flex items-center justify-between mb-2">
             <div>
@@ -346,9 +350,8 @@ const ManagerDashboard: React.FC = () => {
           </div>
         </div>
       </div>
-
-      <ManagerBottomNavigation />
-    </div>
+      </div>
+    </RoleBasedLayout>
   );
 };
 

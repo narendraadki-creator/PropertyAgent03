@@ -68,7 +68,7 @@ const RoleBasedLayout: React.FC<RoleBasedLayoutProps> = ({ user, children, showR
               }`}
             >
               <BarChart3 className="w-4 h-4 mr-2" strokeWidth={1.5} />
-              Manager
+              Agent Manager
             </button>
             <button
               onClick={switchToAdmin}
