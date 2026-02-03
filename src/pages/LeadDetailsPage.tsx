@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Phone, Mail, Star, Tag, Clock, Plus, CheckCircle, Edit, Calendar, MessageCircle, TrendingUp, AlertCircle, Video, FileText, ArrowRight, Save, X } from 'lucide-react';
+import { ArrowLeft, Phone, Mail, Star, Tag, Clock, Plus, CheckCircle, Edit, Calendar, MessageCircle, TrendingUp, AlertCircle, Video, FileText, ArrowRight, Save, X, Trash2, Edit2 } from 'lucide-react';
 import { mockLeads, mockTodayReminders } from '../data/mockData';
 import RoleBasedLayout from '../components/RoleBasedLayout';
 import { mockCurrentUser } from '../data/mockData';
+import { formatDateForInput, formatDateForDisplay } from '../utils/dateHelpers';
 
 const LeadDetailsPage: React.FC = () => {
   const { leadId } = useParams<{ leadId: string }>();
@@ -32,8 +33,11 @@ const LeadDetailsPage: React.FC = () => {
     status: leadData?.status || 'Warm',
     nextFollowUp: leadData?.nextFollowUp || '',
     score: leadData?.score || 5,
-    requirements: leadData?.requirements || ''
+    requirements: leadData?.requirements || '',
+    reminders: leadData?.reminders || []
   });
+
+  const [editingReminderId, setEditingReminderId] = useState<string | null>(null);
 
   if (!leadData) {
     return (
@@ -155,7 +159,21 @@ const LeadDetailsPage: React.FC = () => {
 
   const handleAddReminder = () => {
     if (newReminder.title && newReminder.dueDate && newReminder.dueTime) {
-      console.log(`Adding reminder to lead ${leadId}:`, newReminder);
+      const reminderToAdd = {
+        id: `reminder-${Date.now()}`,
+        title: newReminder.title,
+        description: newReminder.description,
+        dueDate: newReminder.dueDate,
+        dueTime: newReminder.dueTime,
+        priority: newReminder.priority,
+        isCompleted: false
+      };
+
+      setEditedLead(prev => ({
+        ...prev,
+        reminders: [...(prev.reminders || []), reminderToAdd]
+      }));
+
       setNewReminder({
         type: 'call',
         title: '',
@@ -165,7 +183,27 @@ const LeadDetailsPage: React.FC = () => {
         priority: 'medium'
       });
       setShowAddReminder(false);
+      showSuccessMessage();
     }
+  };
+
+  const handleDeleteReminder = (reminderId: string) => {
+    setEditedLead(prev => ({
+      ...prev,
+      reminders: (prev.reminders || []).filter(r => r.id !== reminderId)
+    }));
+    showSuccessMessage();
+  };
+
+  const handleUpdateReminder = (reminderId: string, updates: any) => {
+    setEditedLead(prev => ({
+      ...prev,
+      reminders: (prev.reminders || []).map(r =>
+        r.id === reminderId ? { ...r, ...updates } : r
+      )
+    }));
+    setEditingReminderId(null);
+    showSuccessMessage();
   };
 
   const tabs = [
@@ -331,6 +369,21 @@ const LeadDetailsPage: React.FC = () => {
           </div>
         </div>
 
+        {/* Edit Mode Banner */}
+        {isEditing && (
+          <div className="bg-primary-50 border-b border-primary-200 px-4 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <Edit className="w-5 h-5 text-primary-600 mr-2" strokeWidth={1.5} />
+                <div>
+                  <p className="text-sm font-bold text-primary-800 font-montserrat">Edit Mode Active</p>
+                  <p className="text-xs text-primary-600 font-montserrat">You can now modify lead details, follow-up dates, and reminders</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Content */}
         <div className="px-4 py-6">
           {activeTab === 'overview' && (
@@ -450,12 +503,18 @@ const LeadDetailsPage: React.FC = () => {
                       <Clock className="w-4 h-4 text-neutral-400" strokeWidth={1.5} />
                     </div>
                     {isEditing ? (
-                      <input
-                        type="datetime-local"
-                        value={editedLead.nextFollowUp}
-                        onChange={(e) => setEditedLead(prev => ({ ...prev, nextFollowUp: e.target.value }))}
-                        className="w-full px-4 py-2 bg-white border border-neutral-200 rounded-lg text-neutral-800 font-montserrat focus:ring-2 focus:ring-primary-600 text-sm"
-                      />
+                      <div className="space-y-2">
+                        <input
+                          type="text"
+                          value={editedLead.nextFollowUp}
+                          onChange={(e) => setEditedLead(prev => ({ ...prev, nextFollowUp: e.target.value }))}
+                          className="w-full px-4 py-2 bg-white border border-neutral-200 rounded-lg text-neutral-800 font-montserrat focus:ring-2 focus:ring-primary-600 text-sm"
+                          placeholder="e.g., Jan 15, 2024 (Today)"
+                        />
+                        <p className="text-xs text-neutral-400 font-montserrat">
+                          Format: Month Day, Year (optional note)
+                        </p>
+                      </div>
                     ) : (
                       <div className="text-sm font-medium text-neutral-800 font-montserrat">
                         {lead.nextFollowUp || 'Not scheduled'}
@@ -684,26 +743,37 @@ const LeadDetailsPage: React.FC = () => {
                 </button>
               </div>
 
-              {lead.reminders && lead.reminders.length > 0 ? (
-                lead.reminders.map((reminder) => (
+              {editedLead.reminders && editedLead.reminders.length > 0 ? (
+                editedLead.reminders.map((reminder) => (
                   <div key={reminder.id} className="bg-white rounded-lg border border-neutral-200 p-4">
                     <div className="flex items-start justify-between mb-2">
-                      <div>
+                      <div className="flex-1">
                         <h4 className="font-bold text-neutral-800 font-montserrat mb-1">
                           {reminder.title}
                         </h4>
-                        <p className="text-sm text-neutral-600 font-montserrat mb-2">
-                          {reminder.description}
-                        </p>
+                        {reminder.description && (
+                          <p className="text-sm text-neutral-600 font-montserrat mb-2">
+                            {reminder.description}
+                          </p>
+                        )}
                       </div>
-                      <div className={`px-2 py-1 rounded text-xs font-medium font-montserrat ${
-                        reminder.priority === 'high'
-                          ? 'bg-red-100 text-red-700'
-                          : reminder.priority === 'medium'
-                          ? 'bg-yellow-100 text-yellow-700'
-                          : 'bg-blue-100 text-blue-700'
-                      }`}>
-                        {reminder.priority}
+                      <div className="flex items-center space-x-2 ml-2">
+                        <div className={`px-2 py-1 rounded text-xs font-medium font-montserrat whitespace-nowrap ${
+                          reminder.priority === 'high'
+                            ? 'bg-red-100 text-red-700'
+                            : reminder.priority === 'medium'
+                            ? 'bg-yellow-100 text-yellow-700'
+                            : 'bg-blue-100 text-blue-700'
+                        }`}>
+                          {reminder.priority}
+                        </div>
+                        <button
+                          onClick={() => handleDeleteReminder(reminder.id)}
+                          className="p-1.5 hover:bg-red-50 rounded-lg transition-colors group"
+                          title="Delete reminder"
+                        >
+                          <Trash2 className="w-4 h-4 text-neutral-400 group-hover:text-red-600" strokeWidth={1.5} />
+                        </button>
                       </div>
                     </div>
                     <div className="flex items-center text-sm text-neutral-500 font-montserrat">
