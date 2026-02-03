@@ -13,6 +13,13 @@ const LeadsPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('All Status');
   const [searchTerm, setSearchTerm] = useState('');
   const [updatedLeadId, setUpdatedLeadId] = useState<string | null>(null);
+  const [renderCount, setRenderCount] = useState(0);
+
+  React.useEffect(() => {
+    setRenderCount(prev => prev + 1);
+    console.log('LeadsPage rendered, render count:', renderCount + 1);
+    console.log('Current leads state:', leads);
+  }, [leads]);
 
   const stageFilters = ['All Stages', 'New Lead', 'Contacted', 'Site Visit Scheduled', 'Site Visit Completed', 'Negotiation', 'Booking Initiated', 'Closed'];
   const statusFilters = ['All Status', 'Hot', 'Warm', 'Cold'];
@@ -256,7 +263,7 @@ const LeadsPage: React.FC = () => {
           <div className="space-y-4">
             {filteredLeads.map((lead) => (
               <div
-                key={lead.id}
+                key={`${lead.id}-${lead.stage}-${lead.status}`}
                 className={`bg-white rounded-xl shadow-sm border p-4 transition-all duration-300 ${
                   updatedLeadId === lead.id
                     ? 'border-green-400 shadow-md'
@@ -304,9 +311,10 @@ const LeadsPage: React.FC = () => {
                       <select
                         value={lead.stage}
                         onChange={(e) => {
-                          e.preventDefault();
                           e.stopPropagation();
-                          handleStageUpdate(lead.id, e.target.value);
+                          const newValue = e.target.value;
+                          console.log('Stage dropdown changed to:', newValue);
+                          handleStageUpdate(lead.id, newValue);
                         }}
                         className={`pl-3 pr-8 py-1.5 rounded-lg text-xs font-medium font-montserrat border-2 cursor-pointer focus:ring-2 focus:ring-primary-600 focus:outline-none hover:shadow-md transition-all appearance-none ${getStageColor(lead.stage)}`}
                         onClick={(e) => e.stopPropagation()}
@@ -326,9 +334,10 @@ const LeadsPage: React.FC = () => {
                       <select
                         value={lead.status}
                         onChange={(e) => {
-                          e.preventDefault();
                           e.stopPropagation();
-                          handleStatusUpdate(lead.id, e.target.value as 'Hot' | 'Warm' | 'Cold');
+                          const newValue = e.target.value as 'Hot' | 'Warm' | 'Cold';
+                          console.log('Status dropdown changed to:', newValue);
+                          handleStatusUpdate(lead.id, newValue);
                         }}
                         className={`pl-3 pr-8 py-1.5 rounded-lg text-xs font-medium font-montserrat border-2 cursor-pointer focus:ring-2 focus:ring-primary-600 focus:outline-none hover:shadow-md transition-all appearance-none ${getStatusColor(lead.status)}`}
                         onClick={(e) => e.stopPropagation()}
