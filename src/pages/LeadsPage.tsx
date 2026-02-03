@@ -60,6 +60,23 @@ const LeadsPage: React.FC = () => {
     return 'text-red-600';
   };
 
+  const getStageProgress = (stage: string): number => {
+    const stageMap: { [key: string]: number } = {
+      'New Lead': 0,
+      'New': 0,
+      'Contacted': 1,
+      'Site Visit Scheduled': 2,
+      'Site Visit Completed': 2,
+      'Site Visit': 2,
+      'Negotiation': 3,
+      'Booking Initiated': 4,
+      'Booked / Closed': 4,
+      'Closed': 4,
+      'Lost / Dropped': -1
+    };
+    return stageMap[stage] ?? 0;
+  };
+
   const filteredLeads = leads.filter(lead => {
     const matchesStage = activeFilter === 'All Stages' || lead.stage === activeFilter;
     const matchesStatus = statusFilter === 'All Status' || lead.status === statusFilter;
@@ -366,16 +383,16 @@ const LeadsPage: React.FC = () => {
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-neutral-700 font-montserrat">Lead Progress</span>
                     <span className="text-xs text-neutral-500 font-montserrat">
-                      {['New Lead', 'Contacted', 'Site Visit Scheduled', 'Negotiation', 'Closed'].indexOf(lead.stage) + 1}/5
+                      {getStageProgress(lead.stage) >= 0 ? `${getStageProgress(lead.stage) + 1}/5` : 'N/A'}
                     </span>
                   </div>
 
                   <div className="flex space-x-1">
-                    {['New Lead', 'Contacted', 'Site Visit Scheduled', 'Negotiation', 'Closed'].map((stage, index) => (
+                    {[0, 1, 2, 3, 4].map((index) => (
                       <div
-                        key={stage}
+                        key={index}
                         className={`flex-1 h-2 rounded-full transition-all duration-300 ${
-                          ['New Lead', 'Contacted', 'Site Visit Scheduled', 'Negotiation', 'Closed'].indexOf(lead.stage) >= index
+                          getStageProgress(lead.stage) >= index
                             ? 'bg-gradient-to-r from-primary-600 to-accent-gold'
                             : 'bg-neutral-200'
                         }`}
