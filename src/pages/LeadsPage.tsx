@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Search, Filter, Phone, Mail, MessageCircle, Eye, Plus, Clock, Star, Tag, Calendar, CheckCircle, Edit2 } from 'lucide-react';
+import { ArrowLeft, Search, Filter, Phone, Mail, MessageCircle, Eye, Plus, Clock, Star, Tag, Calendar, CheckCircle, Edit2, ChevronDown } from 'lucide-react';
 import { mockLeads } from '../data/mockData';
 import { Lead } from '../types';
 import RoleBasedLayout from '../components/RoleBasedLayout';
@@ -87,23 +87,37 @@ const LeadsPage: React.FC = () => {
   });
 
   const handleStageUpdate = (leadId: string, newStage: string) => {
-    setLeads(prevLeads =>
-      prevLeads.map(lead =>
+    console.log('=== STAGE UPDATE ===');
+    console.log('Lead ID:', leadId);
+    console.log('New Stage:', newStage);
+    console.log('Current leads:', leads);
+
+    setLeads(prevLeads => {
+      const updated = prevLeads.map(lead =>
         lead.id === leadId ? { ...lead, stage: newStage } : lead
-      )
-    );
+      );
+      console.log('Updated leads:', updated);
+      return updated;
+    });
+
     showUpdateFeedback(leadId);
-    console.log(`Updated lead ${leadId} stage to ${newStage}`);
   };
 
   const handleStatusUpdate = (leadId: string, newStatus: 'Hot' | 'Warm' | 'Cold') => {
-    setLeads(prevLeads =>
-      prevLeads.map(lead =>
+    console.log('=== STATUS UPDATE ===');
+    console.log('Lead ID:', leadId);
+    console.log('New Status:', newStatus);
+    console.log('Current leads:', leads);
+
+    setLeads(prevLeads => {
+      const updated = prevLeads.map(lead =>
         lead.id === leadId ? { ...lead, status: newStatus } : lead
-      )
-    );
+      );
+      console.log('Updated leads:', updated);
+      return updated;
+    });
+
     showUpdateFeedback(leadId);
-    console.log(`Updated lead ${leadId} status to ${newStatus}`);
   };
 
   const showUpdateFeedback = (leadId: string) => {
@@ -286,31 +300,45 @@ const LeadsPage: React.FC = () => {
                   </div>
 
                   <div className="flex flex-col items-end space-y-2 ml-3">
-                    <select
-                      value={lead.stage}
-                      onChange={(e) => handleStageUpdate(lead.id, e.target.value)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium font-montserrat border cursor-pointer focus:ring-2 focus:ring-primary-600 focus:outline-none ${getStageColor(lead.stage)}`}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <option value="New Lead">New Lead</option>
-                      <option value="Contacted">Contacted</option>
-                      <option value="Site Visit Scheduled">Site Visit Scheduled</option>
-                      <option value="Site Visit Completed">Site Visit Completed</option>
-                      <option value="Negotiation">Negotiation</option>
-                      <option value="Booking Initiated">Booking Initiated</option>
-                      <option value="Booked / Closed">Booked / Closed</option>
-                      <option value="Lost / Dropped">Lost / Dropped</option>
-                    </select>
-                    <select
-                      value={lead.status}
-                      onChange={(e) => handleStatusUpdate(lead.id, e.target.value as 'Hot' | 'Warm' | 'Cold')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium font-montserrat border cursor-pointer focus:ring-2 focus:ring-primary-600 focus:outline-none ${getStatusColor(lead.status)}`}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <option value="Hot">Hot</option>
-                      <option value="Warm">Warm</option>
-                      <option value="Cold">Cold</option>
-                    </select>
+                    <div className="relative">
+                      <select
+                        value={lead.stage}
+                        onChange={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleStageUpdate(lead.id, e.target.value);
+                        }}
+                        className={`pl-3 pr-8 py-1.5 rounded-lg text-xs font-medium font-montserrat border-2 cursor-pointer focus:ring-2 focus:ring-primary-600 focus:outline-none hover:shadow-md transition-all appearance-none ${getStageColor(lead.stage)}`}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <option value="New Lead">New Lead</option>
+                        <option value="Contacted">Contacted</option>
+                        <option value="Site Visit Scheduled">Site Visit Scheduled</option>
+                        <option value="Site Visit Completed">Site Visit Completed</option>
+                        <option value="Negotiation">Negotiation</option>
+                        <option value="Booking Initiated">Booking Initiated</option>
+                        <option value="Booked / Closed">Booked / Closed</option>
+                        <option value="Lost / Dropped">Lost / Dropped</option>
+                      </select>
+                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-3 h-3 pointer-events-none" strokeWidth={2.5} />
+                    </div>
+                    <div className="relative">
+                      <select
+                        value={lead.status}
+                        onChange={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleStatusUpdate(lead.id, e.target.value as 'Hot' | 'Warm' | 'Cold');
+                        }}
+                        className={`pl-3 pr-8 py-1.5 rounded-lg text-xs font-medium font-montserrat border-2 cursor-pointer focus:ring-2 focus:ring-primary-600 focus:outline-none hover:shadow-md transition-all appearance-none ${getStatusColor(lead.status)}`}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <option value="Hot">Hot</option>
+                        <option value="Warm">Warm</option>
+                        <option value="Cold">Cold</option>
+                      </select>
+                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-3 h-3 pointer-events-none" strokeWidth={2.5} />
+                    </div>
                   </div>
                 </div>
 
