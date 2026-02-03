@@ -244,7 +244,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'agent' | 'developer' | 'admin';
+  role: 'agent' | 'developer' | 'manager' | 'admin';
   profile: AgentProfile | DeveloperProfile;
 }
 

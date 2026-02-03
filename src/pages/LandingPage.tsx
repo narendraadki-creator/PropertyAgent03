@@ -1,11 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Clock, TrendingUp, Users, CheckCircle, AlertCircle, Bell, Gift, Star } from 'lucide-react';
-import { mockDevelopers } from '../data/mockData';
+import { mockDevelopers, mockProperties } from '../data/mockData';
 import { mockLeads, mockBookings, mockTodayReminders, mockNotifications, mockPromotions } from '../data/mockData';
 import SearchFilters from '../components/SearchFilters';
 import DeveloperCard from '../components/DeveloperCard';
-import AgentBottomNavigation from '../components/AgentBottomNavigation';
 import RoleBasedLayout from '../components/RoleBasedLayout';
 import { mockCurrentUser } from '../data/mockData';
 

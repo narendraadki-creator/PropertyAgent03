@@ -1,10 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Building, Shield } from 'lucide-react';
+import { Users, Building, Shield, BarChart3 } from 'lucide-react';
 import { User } from '../types';
 import AgentBottomNavigation from './AgentBottomNavigation';
 import DeveloperBottomNavigation from './DeveloperBottomNavigation';
 import AdminBottomNavigation from './AdminBottomNavigation';
+import ManagerBottomNavigation from './ManagerBottomNavigation';
 
 interface RoleBasedLayoutProps {
   user: User;
@@ -21,6 +22,10 @@ const RoleBasedLayout: React.FC<RoleBasedLayoutProps> = ({ user, children, showR
 
   const switchToDeveloper = () => {
     navigate('/developer/dashboard');
+  };
+
+  const switchToManager = () => {
+    navigate('/manager/dashboard');
   };
 
   const switchToAdmin = () => {
@@ -46,8 +51,8 @@ const RoleBasedLayout: React.FC<RoleBasedLayoutProps> = ({ user, children, showR
             <button
               onClick={switchToDeveloper}
               className={`flex items-center px-3 py-2 rounded-md text-sm font-medium font-montserrat transition-colors ${
-                user.role === 'developer' 
-                  ? 'bg-primary-600 text-white' 
+                user.role === 'developer'
+                  ? 'bg-primary-600 text-white'
                   : 'text-neutral-600 hover:bg-neutral-50'
               }`}
             >
@@ -55,10 +60,21 @@ const RoleBasedLayout: React.FC<RoleBasedLayoutProps> = ({ user, children, showR
               Developer
             </button>
             <button
+              onClick={switchToManager}
+              className={`flex items-center px-3 py-2 rounded-md text-sm font-medium font-montserrat transition-colors ${
+                user.role === 'manager'
+                  ? 'bg-primary-600 text-white'
+                  : 'text-neutral-600 hover:bg-neutral-50'
+              }`}
+            >
+              <BarChart3 className="w-4 h-4 mr-2" strokeWidth={1.5} />
+              Manager
+            </button>
+            <button
               onClick={switchToAdmin}
               className={`flex items-center px-3 py-2 rounded-md text-sm font-medium font-montserrat transition-colors ${
-                user.role === 'admin' 
-                  ? 'bg-red-600 text-white' 
+                user.role === 'admin'
+                  ? 'bg-red-600 text-white'
                   : 'text-neutral-600 hover:bg-neutral-50'
               }`}
             >
@@ -71,6 +87,7 @@ const RoleBasedLayout: React.FC<RoleBasedLayoutProps> = ({ user, children, showR
       {children}
       {user.role === 'agent' && <AgentBottomNavigation />}
       {user.role === 'developer' && <DeveloperBottomNavigation />}
+      {user.role === 'manager' && <ManagerBottomNavigation />}
       {user.role === 'admin' && <AdminBottomNavigation />}
     </div>
   );

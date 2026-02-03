@@ -4,7 +4,6 @@ import { ArrowLeft, Phone, Mail, Star, Tag, Clock, Plus, CheckCircle, Edit, Cale
 import { mockLeads, mockTodayReminders } from '../data/mockData';
 import RoleBasedLayout from '../components/RoleBasedLayout';
 import { mockCurrentUser } from '../data/mockData';
-import AgentBottomNavigation from '../components/AgentBottomNavigation';
 
 const LeadDetailsPage: React.FC = () => {
   const { leadId } = useParams<{ leadId: string }>();
@@ -695,7 +694,6 @@ const LeadDetailsPage: React.FC = () => {
         </div>
       )}
 
-      <AgentBottomNavigation />
     </RoleBasedLayout>
   );
 };
