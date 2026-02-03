@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Phone, Mail, Star, Tag, Clock, Plus, CheckCircle, Edit, Calendar, MessageCircle, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Phone, Mail, Star, Tag, Clock, Plus, CheckCircle, Edit, Calendar, MessageCircle, TrendingUp, AlertCircle, Video, FileText, ArrowRight } from 'lucide-react';
 import { mockLeads, mockTodayReminders } from '../data/mockData';
 import RoleBasedLayout from '../components/RoleBasedLayout';
 import { mockCurrentUser } from '../data/mockData';
+import AgentBottomNavigation from '../components/AgentBottomNavigation';
 
 const LeadDetailsPage: React.FC = () => {
   const { leadId } = useParams<{ leadId: string }>();
@@ -104,10 +105,100 @@ const LeadDetailsPage: React.FC = () => {
 
   const tabs = [
     { id: 'overview', label: 'Overview' },
+    { id: 'activity', label: 'Activity' },
     { id: 'notes', label: 'Notes' },
-    { id: 'reminders', label: 'Reminders' },
-    { id: 'activity', label: 'Activity' }
+    { id: 'reminders', label: 'Reminders' }
   ];
+
+  const activityTimeline = [
+    {
+      id: '1',
+      type: 'stage_change',
+      title: 'Stage Updated',
+      description: `Lead moved to ${lead.stage}`,
+      timestamp: '2 hours ago',
+      icon: TrendingUp,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-100'
+    },
+    {
+      id: '2',
+      type: 'call',
+      title: 'Phone Call Logged',
+      description: 'Discussed budget and preferences. Very interested in 3BHK units.',
+      timestamp: '5 hours ago',
+      icon: Phone,
+      color: 'text-green-600',
+      bgColor: 'bg-green-100'
+    },
+    {
+      id: '3',
+      type: 'note',
+      title: 'Note Added',
+      description: 'Prefers east-facing units for morning sunlight',
+      timestamp: '1 day ago',
+      icon: FileText,
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-100'
+    },
+    {
+      id: '4',
+      type: 'reminder',
+      title: 'Reminder Set',
+      description: 'Site visit scheduled for this weekend',
+      timestamp: '1 day ago',
+      icon: Clock,
+      color: 'text-orange-600',
+      bgColor: 'bg-orange-100'
+    },
+    {
+      id: '5',
+      type: 'email',
+      title: 'Email Sent',
+      description: 'Sent floor plans and pricing details',
+      timestamp: '2 days ago',
+      icon: Mail,
+      color: 'text-teal-600',
+      bgColor: 'bg-teal-100'
+    }
+  ];
+
+  const getNextActions = (stage: string) => {
+    switch (stage) {
+      case 'New':
+        return [
+          { label: 'Make First Call', icon: Phone, action: 'call', primary: true },
+          { label: 'Send Email', icon: Mail, action: 'email' },
+          { label: 'Schedule Meeting', icon: Calendar, action: 'meeting' }
+        ];
+      case 'Contacted':
+        return [
+          { label: 'Schedule Site Visit', icon: Video, action: 'schedule_visit', primary: true },
+          { label: 'Send Brochure', icon: FileText, action: 'send_brochure' },
+          { label: 'Follow Up Call', icon: Phone, action: 'call' }
+        ];
+      case 'Site Visit':
+        return [
+          { label: 'Complete Visit', icon: CheckCircle, action: 'complete_visit', primary: true },
+          { label: 'Send Follow-up', icon: Mail, action: 'followup' },
+          { label: 'Reschedule', icon: Calendar, action: 'reschedule' }
+        ];
+      case 'Negotiation':
+        return [
+          { label: 'Initiate Booking', icon: ArrowRight, action: 'start_booking', primary: true },
+          { label: 'Send Quote', icon: FileText, action: 'send_quote' },
+          { label: 'Schedule Call', icon: Phone, action: 'call' }
+        ];
+      default:
+        return [
+          { label: 'Update Stage', icon: TrendingUp, action: 'update_stage', primary: true },
+          { label: 'Add Note', icon: FileText, action: 'add_note' },
+          { label: 'Set Reminder', icon: Clock, action: 'add_reminder' }
+        ];
+    }
+  };
+
+  const nextActions = getNextActions(lead.stage);
 
   return (
     <RoleBasedLayout user={mockCurrentUser} showRoleSwitcher={true}>
@@ -388,14 +479,72 @@ const LeadDetailsPage: React.FC = () => {
         {activeTab === 'activity' && (
           <div className="space-y-4">
             <h3 className="text-lg font-bold text-neutral-800 font-montserrat">Activity Timeline</h3>
-            <div className="bg-white rounded-lg border border-neutral-200 p-4">
-              <div className="text-center py-8">
-                <TrendingUp className="w-12 h-12 text-neutral-400 mx-auto mb-4" strokeWidth={1.5} />
-                <h4 className="text-lg font-medium text-neutral-600 mb-2">Activity Timeline</h4>
-                <p className="text-neutral-400 font-montserrat text-sm">
-                  Detailed activity tracking coming soon
-                </p>
+
+            {/* Automation Suggestion */}
+            <div className="bg-gradient-to-r from-accent-gold/10 to-primary-600/10 border border-accent-gold/30 rounded-xl p-4">
+              <div className="flex items-start">
+                <AlertCircle className="w-5 h-5 text-accent-gold mr-3 mt-0.5 flex-shrink-0" strokeWidth={1.5} />
+                <div className="flex-1">
+                  <h4 className="text-sm font-bold text-neutral-800 font-montserrat mb-1">
+                    Suggested Next Action
+                  </h4>
+                  <p className="text-sm text-neutral-600 font-montserrat mb-3">
+                    {lead.stage === 'Negotiation' ?
+                      'Lead is in negotiation stage. Consider initiating booking process.' :
+                      lead.stage === 'Site Visit' ?
+                      'Site visit scheduled. Prepare property details and confirm attendance.' :
+                      'Follow up with the lead to maintain engagement and move forward.'}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {nextActions.map((action, index) => {
+                      const Icon = action.icon;
+                      return (
+                        <button
+                          key={index}
+                          onClick={() => console.log(`Action: ${action.action}`)}
+                          className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium font-montserrat transition-colors ${
+                            action.primary
+                              ? 'bg-primary-600 text-white hover:bg-primary-700'
+                              : 'bg-white text-neutral-700 hover:bg-neutral-100 border border-neutral-200'
+                          }`}
+                        >
+                          <Icon className="w-4 h-4 mr-1" strokeWidth={1.5} />
+                          {action.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
+            </div>
+
+            {/* Timeline */}
+            <div className="space-y-3">
+              {activityTimeline.map((activity) => {
+                const Icon = activity.icon;
+                return (
+                  <div key={activity.id} className="bg-white rounded-lg border border-neutral-200 p-4">
+                    <div className="flex items-start">
+                      <div className={`p-2 rounded-lg ${activity.bgColor} mr-3 flex-shrink-0`}>
+                        <Icon className={`w-5 h-5 ${activity.color}`} strokeWidth={1.5} />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-1">
+                          <h4 className="text-sm font-bold text-neutral-800 font-montserrat">
+                            {activity.title}
+                          </h4>
+                          <span className="text-xs text-neutral-500 font-montserrat">
+                            {activity.timestamp}
+                          </span>
+                        </div>
+                        <p className="text-sm text-neutral-600 font-montserrat">
+                          {activity.description}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -546,6 +695,7 @@ const LeadDetailsPage: React.FC = () => {
         </div>
       )}
 
+      <AgentBottomNavigation />
     </RoleBasedLayout>
   );
 };

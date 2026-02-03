@@ -34,6 +34,11 @@ import BookingFormPage from './pages/BookingFormPage';
 import NotificationsPage from './pages/NotificationsPage';
 import PromotionsPage from './pages/PromotionsPage';
 import DeveloperPromotions from './pages/DeveloperPromotions';
+import ManagerDashboard from './pages/ManagerDashboard';
+import ManagerAgents from './pages/ManagerAgents';
+import ManagerLeads from './pages/ManagerLeads';
+import ManagerAnalytics from './pages/ManagerAnalytics';
+import ManagerProfile from './pages/ManagerProfile';
 
 function App() {
   return (
@@ -80,6 +85,14 @@ function App() {
           <Route path="/admin/logs" element={<AdminLogs />} />
           <Route path="/admin/settings" element={<AdminSettings />} />
           <Route path="/admin/profile" element={<AdminProfile />} />
+
+          {/* Manager Routes */}
+          <Route path="/manager/dashboard" element={<ManagerDashboard />} />
+          <Route path="/manager/agents" element={<ManagerAgents />} />
+          <Route path="/manager/agents/:agentId" element={<ManagerAgents />} />
+          <Route path="/manager/leads" element={<ManagerLeads />} />
+          <Route path="/manager/analytics" element={<ManagerAnalytics />} />
+          <Route path="/manager/profile" element={<ManagerProfile />} />
         </Routes>
       </div>
     </Router>

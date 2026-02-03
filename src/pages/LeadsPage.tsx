@@ -24,7 +24,7 @@ const LeadsPage: React.FC = () => {
     priority: 'medium'
   });
 
-  const stageFilters = ['All Stages', 'New', 'Contacted', 'Site Visit', 'Negotiation', 'Closed'];
+  const stageFilters = ['All Stages', 'New Lead', 'Contacted', 'Site Visit Scheduled', 'Site Visit Completed', 'Negotiation', 'Booking Initiated', 'Closed'];
   const statusFilters = ['All Status', 'Hot', 'Warm', 'Cold'];
 
   const getStageColor = (stage: string) => {
