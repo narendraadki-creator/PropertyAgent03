@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Search, Filter, Phone, Mail, MessageCircle, Eye, Plus, Clock, Star, Tag, Calendar, CheckCircle, Edit2, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Search, Filter, Phone, Mail, MessageCircle, Eye, Plus, Clock, Star, Tag, Calendar, CheckCircle, Edit2, ChevronDown, Bell } from 'lucide-react';
 import { mockLeads } from '../data/mockData';
 import { Lead } from '../types';
 import RoleBasedLayout from '../components/RoleBasedLayout';
 import { mockCurrentUser } from '../data/mockData';
+import { applyStageAutomation } from '../utils/stageAutomation';
 
 const LeadsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ const LeadsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [updatedLeadId, setUpdatedLeadId] = useState<string | null>(null);
   const [renderCount, setRenderCount] = useState(0);
+  const [showAutomationNotice, setShowAutomationNotice] = useState(false);
 
   React.useEffect(() => {
     setRenderCount(prev => prev + 1);
@@ -94,20 +96,29 @@ const LeadsPage: React.FC = () => {
   });
 
   const handleStageUpdate = (leadId: string, newStage: string) => {
-    console.log('=== STAGE UPDATE ===');
+    console.log('=== STAGE UPDATE WITH AUTOMATION ===');
     console.log('Lead ID:', leadId);
     console.log('New Stage:', newStage);
-    console.log('Current leads:', leads);
 
     setLeads(prevLeads => {
-      const updated = prevLeads.map(lead =>
-        lead.id === leadId ? { ...lead, stage: newStage } : lead
-      );
-      console.log('Updated leads:', updated);
+      const updated = prevLeads.map(lead => {
+        if (lead.id === leadId) {
+          const automatedLead = applyStageAutomation(lead, newStage);
+          console.log('Applied automation:', {
+            stage: automatedLead.stage,
+            nextFollowUp: automatedLead.nextFollowUp,
+            reminders: automatedLead.reminders
+          });
+          return automatedLead;
+        }
+        return lead;
+      });
       return updated;
     });
 
     showUpdateFeedback(leadId);
+    setShowAutomationNotice(true);
+    setTimeout(() => setShowAutomationNotice(false), 3000);
   };
 
   const handleStatusUpdate = (leadId: string, newStatus: 'Hot' | 'Warm' | 'Cold') => {
@@ -139,6 +150,14 @@ const LeadsPage: React.FC = () => {
         <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center animate-fade-in">
           <CheckCircle className="w-5 h-5 mr-2" strokeWidth={2} />
           <span className="font-medium font-montserrat">Lead updated successfully!</span>
+        </div>
+      )}
+
+      {/* Automation Notice */}
+      {showAutomationNotice && (
+        <div className="fixed top-32 left-1/2 transform -translate-x-1/2 z-50 bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center animate-fade-in">
+          <Bell className="w-5 h-5 mr-2" strokeWidth={2} />
+          <span className="font-medium font-montserrat">Auto-reminder created & follow-up scheduled!</span>
         </div>
       )}
 
