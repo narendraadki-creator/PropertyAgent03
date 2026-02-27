@@ -322,7 +322,7 @@ const MarketTrends: React.FC = () => {
                   <select
                     value={selectedArea}
                     onChange={(e) => setSelectedArea(e.target.value)}
-                    className="px-3 py-2 border border-neutral-200 rounded-lg text-sm font-montserrat"
+                    className="px-3 py-2 border border-neutral-200 rounded-lg text-sm font-montserrat focus:outline-none focus:ring-2 focus:ring-primary-600"
                   >
                     {areas.map(area => (
                       <option key={area} value={area}>{area === 'all' ? 'All Areas' : area}</option>
@@ -331,7 +331,10 @@ const MarketTrends: React.FC = () => {
                 </div>
 
                 <div className="space-y-3">
-                  {trends.slice(0, 5).map((trend, idx) => (
+                  {(selectedArea === 'all'
+                    ? trends.slice(0, 5)
+                    : trends.filter(t => t.area_name === selectedArea).slice(0, 5)
+                  ).map((trend, idx) => (
                     <div key={idx} className="p-4 bg-neutral-50 rounded-lg">
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="font-medium text-neutral-800 font-montserrat">{trend.area_name}</h4>
@@ -423,7 +426,7 @@ const MarketTrends: React.FC = () => {
                         href={item.source_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-primary-600 text-sm font-medium font-montserrat hover:text-primary-700 flex items-center"
+                        className="inline-flex items-center text-primary-600 text-sm font-medium font-montserrat hover:text-primary-700 hover:underline transition-all"
                       >
                         Read Original
                         <ExternalLink className="w-3 h-3 ml-1" />
