@@ -10,7 +10,7 @@ export const seedMarketData = async () => {
   const yesterday = new Date(Date.now() - 86400000).toISOString();
 
   const generateTimestamp = (daysAgo: number) => {
-    return new Date(Date.now() - daysAgo * 86400000).toISOString();
+    return new Date(Date.now() - daysAgo * 86400000).toISOString().split('T')[0];
   };
 
   const sampleNews = [
