@@ -231,8 +231,14 @@ export const seedMarketData = async () => {
 
     console.log('Market data seeded successfully');
     return { success: true, message: 'Market data seeded successfully' };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error seeding data:', error);
+
+    if (error?.code === '23505') {
+      console.log('Data already exists (duplicate key), treating as success');
+      return { success: true, message: 'Data already exists' };
+    }
+
     return { success: false, error };
   }
 };
