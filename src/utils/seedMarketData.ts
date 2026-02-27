@@ -192,6 +192,16 @@ export const seedMarketData = async () => {
   };
 
   try {
+    const { data: existingNews } = await supabase
+      .from('market_news')
+      .select('id')
+      .limit(1);
+
+    if (existingNews && existingNews.length > 0) {
+      console.log('Data already exists, skipping seed');
+      return { success: true, message: 'Data already exists' };
+    }
+
     const { data: newsData, error: newsError } = await supabase
       .from('market_news')
       .insert(sampleNews);
