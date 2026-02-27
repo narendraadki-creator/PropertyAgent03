@@ -12,10 +12,12 @@ import {
   Clock,
   Award,
   Building2,
-  Sparkles
+  Sparkles,
+  RefreshCw
 } from 'lucide-react';
 import RoleBasedLayout from '../components/RoleBasedLayout';
 import { mockCurrentUser } from '../data/mockData';
+import { seedMarketData } from '../utils/seedMarketData';
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -66,49 +68,120 @@ const MarketTrends: React.FC = () => {
   const [selectedArea, setSelectedArea] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const [newsOffset, setNewsOffset] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const newsLimit = 20;
 
   useEffect(() => {
-    fetchData();
+    initializeData();
+  }, []);
+
+  useEffect(() => {
+    if (!loading) {
+      fetchData();
+    }
   }, [activeTab, selectedArea]);
 
-  const fetchData = async () => {
+  const initializeData = async () => {
     setLoading(true);
+    setError(null);
 
-    if (activeTab === 'insights' || activeTab === 'news') {
-      let query = supabase
-        .from('market_news')
-        .select('*')
-        .eq('processing_status', 'completed')
-        .order('trend_score', { ascending: false })
-        .order('publish_date', { ascending: false });
+    const { data: existingNews } = await supabase
+      .from('market_news')
+      .select('id')
+      .limit(1);
 
-      if (selectedArea !== 'all') {
-        query = query.eq('area', selectedArea);
+    if (!existingNews || existingNews.length === 0) {
+      const result = await seedMarketData();
+      if (!result.success) {
+        setError('Failed to initialize market data');
+      }
+    }
+
+    await fetchData();
+    setLoading(false);
+  };
+
+  const fetchData = async () => {
+    try {
+      if (activeTab === 'insights' || activeTab === 'news') {
+        let query = supabase
+          .from('market_news')
+          .select('*')
+          .eq('processing_status', 'completed')
+          .order('trend_score', { ascending: false })
+          .order('publish_date', { ascending: false });
+
+        if (selectedArea !== 'all') {
+          query = query.eq('area', selectedArea);
+        }
+
+        const { data: newsData, error: newsError } = await query.limit(newsLimit).range(newsOffset, newsOffset + newsLimit - 1);
+
+        if (newsError) {
+          console.error('Error fetching news:', newsError);
+          setError('Failed to fetch market news');
+        } else {
+          setNews(newsData || []);
+        }
+
+        const { data: trendsData, error: trendsError } = await supabase
+          .from('area_trends')
+          .select('*')
+          .order('date', { ascending: false })
+          .limit(30);
+
+        if (trendsError) {
+          console.error('Error fetching trends:', trendsError);
+        } else {
+          setTrends(trendsData || []);
+        }
       }
 
-      const { data: newsData } = await query.limit(newsLimit).range(newsOffset, newsOffset + newsLimit - 1);
-      setNews(newsData || []);
+      if (activeTab === 'manager') {
+        const { data: analyticsData, error: analyticsError } = await supabase
+          .from('manager_analytics')
+          .select('*')
+          .order('date', { ascending: false })
+          .limit(1)
+          .maybeSingle();
 
-      const { data: trendsData } = await supabase
-        .from('area_trends')
-        .select('*')
-        .order('date', { ascending: false })
-        .limit(30);
-      setTrends(trendsData || []);
+        if (analyticsError) {
+          console.error('Error fetching analytics:', analyticsError);
+        } else {
+          setAnalytics(analyticsData);
+        }
+      }
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      setError('An unexpected error occurred');
     }
+  };
 
-    if (activeTab === 'manager') {
-      const { data: analyticsData } = await supabase
-        .from('manager_analytics')
-        .select('*')
-        .order('date', { ascending: false })
-        .limit(1)
-        .single();
-      setAnalytics(analyticsData);
+  const handleRefreshData = async () => {
+    setRefreshing(true);
+    setError(null);
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/market-trends-ingestion`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json',
+          }
+        }
+      );
+
+      if (response.ok) {
+        await fetchData();
+      }
+    } catch (err) {
+      console.error('Failed to refresh data:', err);
+    } finally {
+      setRefreshing(false);
     }
-
-    setLoading(false);
   };
 
   const getSignalColor = (signal: string) => {
@@ -157,11 +230,22 @@ const MarketTrends: React.FC = () => {
       <div className="min-h-screen bg-neutral-50 pb-20">
         <div className="bg-white border-b border-neutral-100 sticky top-0 z-40">
           <div className="px-4 py-4">
-            <h1 className="text-xl font-bold uppercase tracking-extra-wide text-primary-600 font-montserrat">
-              MARKET TRENDS
-              <div className="w-16 h-0.5 bg-gradient-to-r from-accent-gold to-primary-600 mt-1 rounded-full"></div>
-            </h1>
-            <p className="text-sm text-neutral-500 font-montserrat">AI-Powered Market Intelligence</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-xl font-bold uppercase tracking-extra-wide text-primary-600 font-montserrat">
+                  MARKET TRENDS
+                  <div className="w-16 h-0.5 bg-gradient-to-r from-accent-gold to-primary-600 mt-1 rounded-full"></div>
+                </h1>
+                <p className="text-sm text-neutral-500 font-montserrat">AI-Powered Market Intelligence</p>
+              </div>
+              <button
+                onClick={handleRefreshData}
+                disabled={refreshing}
+                className="p-2 rounded-lg hover:bg-neutral-100 transition-colors disabled:opacity-50"
+              >
+                <RefreshCw className={`w-5 h-5 text-primary-600 ${refreshing ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
           </div>
 
           <div className="flex border-t border-neutral-100">
@@ -202,6 +286,12 @@ const MarketTrends: React.FC = () => {
         </div>
 
         <div className="px-4 py-6">
+          {error && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-700 text-sm font-montserrat">{error}</p>
+            </div>
+          )}
+
           {activeTab === 'insights' && (
             <div className="space-y-6">
               <div className="bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl p-6 text-white">
