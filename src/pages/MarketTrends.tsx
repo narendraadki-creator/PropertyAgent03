@@ -105,24 +105,26 @@ const MarketTrends: React.FC = () => {
   const fetchData = async () => {
     try {
       if (activeTab === 'insights' || activeTab === 'news') {
-        let query = supabase
+        const { data: newsData, error: newsError } = await supabase
           .from('market_news')
           .select('*')
           .eq('processing_status', 'completed')
-          .order('trend_score', { ascending: false })
-          .order('publish_date', { ascending: false });
-
-        if (selectedArea !== 'all') {
-          query = query.eq('area', selectedArea);
-        }
-
-        const { data: newsData, error: newsError } = await query.limit(newsLimit).range(newsOffset, newsOffset + newsLimit - 1);
+          .order('publish_date', { ascending: false })
+          .order('trend_score', { ascending: false });
 
         if (newsError) {
           console.error('Error fetching news:', newsError);
           setError('Failed to fetch market news');
         } else {
-          setNews(newsData || []);
+          const uniqueNews = Array.from(
+            new Map(newsData?.map(item => [item.title + item.publish_date, item]) || []).values()
+          );
+
+          const filteredNews = selectedArea === 'all'
+            ? uniqueNews
+            : uniqueNews.filter(item => item.area === selectedArea);
+
+          setNews(filteredNews.slice(newsOffset, newsOffset + newsLimit));
         }
 
         const { data: trendsData, error: trendsError } = await supabase
