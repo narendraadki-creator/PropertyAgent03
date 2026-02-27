@@ -192,24 +192,34 @@ export const seedMarketData = async () => {
   };
 
   try {
-    const { error: newsError } = await supabase
+    const { data: newsData, error: newsError } = await supabase
       .from('market_news')
-      .upsert(sampleNews, { onConflict: 'title' });
+      .insert(sampleNews);
 
-    if (newsError) throw newsError;
+    if (newsError) {
+      console.error('News insert error:', newsError);
+      throw newsError;
+    }
 
-    const { error: trendsError } = await supabase
+    const { data: trendsData, error: trendsError } = await supabase
       .from('area_trends')
-      .upsert(areaTrends, { onConflict: 'area_name,date' });
+      .insert(areaTrends);
 
-    if (trendsError) throw trendsError;
+    if (trendsError) {
+      console.error('Trends insert error:', trendsError);
+      throw trendsError;
+    }
 
-    const { error: analyticsError } = await supabase
+    const { data: analyticsData, error: analyticsError } = await supabase
       .from('manager_analytics')
-      .upsert(managerAnalytics, { onConflict: 'date' });
+      .insert(managerAnalytics);
 
-    if (analyticsError) throw analyticsError;
+    if (analyticsError) {
+      console.error('Analytics insert error:', analyticsError);
+      throw analyticsError;
+    }
 
+    console.log('Market data seeded successfully');
     return { success: true, message: 'Market data seeded successfully' };
   } catch (error) {
     console.error('Error seeding data:', error);
