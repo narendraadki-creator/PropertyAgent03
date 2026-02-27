@@ -320,29 +320,36 @@ export const seedMarketData = async () => {
       return { success: true, message: 'Data already exists' };
     }
 
-    const { data: newsData, error: newsError } = await supabase
-      .from('market_news')
-      .insert(sampleNews);
+    for (const newsItem of sampleNews) {
+      const { error: newsError } = await supabase
+        .from('market_news')
+        .insert(newsItem)
+        .select();
 
-    if (newsError) {
-      console.error('News insert error:', newsError);
-      throw newsError;
+      if (newsError && newsError.code !== '23505') {
+        console.error('News insert error:', newsError);
+        throw newsError;
+      }
     }
 
-    const { data: trendsData, error: trendsError } = await supabase
-      .from('area_trends')
-      .insert(areaTrends);
+    for (const trend of areaTrends) {
+      const { error: trendError } = await supabase
+        .from('area_trends')
+        .insert(trend)
+        .select();
 
-    if (trendsError) {
-      console.error('Trends insert error:', trendsError);
-      throw trendsError;
+      if (trendError && trendError.code !== '23505') {
+        console.error('Trend insert error:', trendError);
+        throw trendError;
+      }
     }
 
-    const { data: analyticsData, error: analyticsError } = await supabase
+    const { error: analyticsError } = await supabase
       .from('manager_analytics')
-      .insert(managerAnalytics);
+      .insert(managerAnalytics)
+      .select();
 
-    if (analyticsError) {
+    if (analyticsError && analyticsError.code !== '23505') {
       console.error('Analytics insert error:', analyticsError);
       throw analyticsError;
     }
@@ -351,12 +358,6 @@ export const seedMarketData = async () => {
     return { success: true, message: 'Market data seeded successfully' };
   } catch (error: any) {
     console.error('Error seeding data:', error);
-
-    if (error?.code === '23505') {
-      console.log('Data already exists (duplicate key), treating as success');
-      return { success: true, message: 'Data already exists' };
-    }
-
     return { success: false, error };
   }
 };
