@@ -430,17 +430,10 @@ const MarketTrends: React.FC = () => {
                       )}
                     </div>
 
-                    {item.source_url && (
-                      <a
-                        href={item.source_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center text-primary-600 text-sm font-medium font-montserrat hover:text-primary-700 hover:underline transition-all"
-                      >
-                        Read Original
-                        <ExternalLink className="w-3 h-3 ml-1" />
-                      </a>
-                    )}
+                    <div className="flex items-center gap-2 text-xs text-neutral-500">
+                      <Sparkles className="w-3 h-3" />
+                      <span className="font-montserrat">AI-Generated Market Intelligence</span>
+                    </div>
                   </div>
                 ))
               )}
