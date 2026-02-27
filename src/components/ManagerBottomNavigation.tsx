@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, ClipboardList, BarChart3, User } from 'lucide-react';
+import { LayoutDashboard, Users, ClipboardList, TrendingUp, User } from 'lucide-react';
 
 const ManagerBottomNavigation: React.FC = () => {
   const navigate = useNavigate();
@@ -8,9 +8,9 @@ const ManagerBottomNavigation: React.FC = () => {
 
   const navItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/manager/dashboard' },
+    { icon: TrendingUp, label: 'Trends', path: '/market-trends' },
     { icon: Users, label: 'Agents', path: '/manager/agents' },
     { icon: ClipboardList, label: 'Leads', path: '/manager/leads' },
-    { icon: BarChart3, label: 'Analytics', path: '/manager/analytics' },
     { icon: User, label: 'Profile', path: '/manager/profile' },
   ];
 

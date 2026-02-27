@@ -39,6 +39,7 @@ import ManagerAgents from './pages/ManagerAgents';
 import ManagerLeads from './pages/ManagerLeads';
 import ManagerAnalytics from './pages/ManagerAnalytics';
 import ManagerProfile from './pages/ManagerProfile';
+import MarketTrends from './pages/MarketTrends';
 
 function App() {
   return (
@@ -93,6 +94,9 @@ function App() {
           <Route path="/manager/leads" element={<ManagerLeads />} />
           <Route path="/manager/analytics" element={<ManagerAnalytics />} />
           <Route path="/manager/profile" element={<ManagerProfile />} />
+
+          {/* Market Trends Route (accessible to all roles) */}
+          <Route path="/market-trends" element={<MarketTrends />} />
         </Routes>
       </div>
     </Router>
