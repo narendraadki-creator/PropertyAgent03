@@ -37,8 +37,11 @@ Deno.serve(async (req: Request) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const rssFeeds = [
-      "https://www.propertyfinder.ae/en/blog/category/dubai/feed/",
-      "https://www.bayut.com/mybayut/category/dubai/feed/",
+      "https://gulfnews.com/business/property/rss",
+      "https://www.thenationalnews.com/business/property/rss",
+      "https://www.khaleejtimes.com/rss/business/real-estate",
+      "https://www.propertyfinder.ae/en/blog/feed/",
+      "https://www.bayut.com/mybayut/feed/",
     ];
 
     let totalFetched = 0;
