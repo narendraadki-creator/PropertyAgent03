@@ -17,7 +17,6 @@ import {
 } from 'lucide-react';
 import RoleBasedLayout from '../components/RoleBasedLayout';
 import { mockCurrentUser } from '../data/mockData';
-import { seedMarketData } from '../utils/seedMarketData';
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -85,19 +84,6 @@ const MarketTrends: React.FC = () => {
   const initializeData = async () => {
     setLoading(true);
     setError(null);
-
-    const { data: existingNews } = await supabase
-      .from('market_news')
-      .select('id')
-      .limit(1);
-
-    if (!existingNews || existingNews.length === 0) {
-      const result = await seedMarketData();
-      if (!result.success) {
-        setError('Failed to initialize market data');
-      }
-    }
-
     await fetchData();
     setLoading(false);
   };
