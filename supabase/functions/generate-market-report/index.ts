@@ -227,5 +227,5 @@ async function generatePDF(htmlContent: string): Promise<Blob> {
   const encoder = new TextEncoder();
   const data = encoder.encode(htmlContent);
 
-  return new Blob([data], { type: "application/pdf" });
+  return new Blob([data], { type: "text/html" });
 }
