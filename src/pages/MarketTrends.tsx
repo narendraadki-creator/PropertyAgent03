@@ -100,7 +100,9 @@ const MarketTrends: React.FC = () => {
 
         if (newsError) {
           console.error('Error fetching news:', newsError);
-          setError('Failed to fetch market news');
+          if (newsError.message !== 'Failed to fetch') {
+            setError(`Failed to fetch market news: ${newsError.message}`);
+          }
         } else {
           const uniqueNews = Array.from(
             new Map(newsData?.map(item => [item.title + item.publish_date, item]) || []).values()
@@ -111,6 +113,7 @@ const MarketTrends: React.FC = () => {
             : uniqueNews.filter(item => item.area === selectedArea);
 
           setNews(filteredNews.slice(newsOffset, newsOffset + newsLimit));
+          setError(null);
         }
 
         const { data: trendsData, error: trendsError } = await supabase
@@ -121,6 +124,9 @@ const MarketTrends: React.FC = () => {
 
         if (trendsError) {
           console.error('Error fetching trends:', trendsError);
+          if (trendsError.message === 'Failed to fetch') {
+            setError('Unable to connect to database. Please check your connection.');
+          }
         } else {
           setTrends(trendsData || []);
         }
@@ -142,7 +148,10 @@ const MarketTrends: React.FC = () => {
       }
     } catch (err) {
       console.error('Unexpected error:', err);
-      setError('An unexpected error occurred');
+      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
+      if (!errorMessage.includes('Failed to fetch')) {
+        setError(errorMessage);
+      }
     }
   };
 
