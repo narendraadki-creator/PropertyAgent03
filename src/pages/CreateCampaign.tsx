@@ -37,12 +37,18 @@ export default function CreateCampaign() {
 
   const fetchProjects = async () => {
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('projects')
         .select('*')
         .order('created_at', { ascending: false });
 
+      if (error) {
+        console.error('Error fetching projects:', error);
+        return;
+      }
+
       if (data) {
+        console.log('Fetched projects:', data);
         setProjects(data as any);
       }
     } catch (error) {
