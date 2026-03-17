@@ -33,6 +33,8 @@ import BookingFormPage from './pages/BookingFormPage';
 import NotificationsPage from './pages/NotificationsPage';
 import PromotionsPage from './pages/PromotionsPage';
 import DeveloperPromotions from './pages/DeveloperPromotions';
+import DeveloperCampaigns from './pages/DeveloperCampaigns';
+import CreateCampaign from './pages/CreateCampaign';
 import ManagerDashboard from './pages/ManagerDashboard';
 import ManagerAgents from './pages/ManagerAgents';
 import ManagerAgentDetails from './pages/ManagerAgentDetails';
@@ -68,6 +70,8 @@ function App() {
           <Route path="/developer/projects/:projectId" element={<ProjectDetailsPage />} />
           <Route path="/developer/projects/:projectId/edit" element={<EditProject />} />
           <Route path="/developer/promotions" element={<DeveloperPromotions />} />
+          <Route path="/developer/campaigns" element={<DeveloperCampaigns />} />
+          <Route path="/developer/campaigns/create" element={<CreateCampaign />} />
           <Route path="/developer/settings" element={<DeveloperSettings />} />
           
           {/* Admin Routes */}

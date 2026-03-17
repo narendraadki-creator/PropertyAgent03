@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Share, Heart, MapPin, Calendar, Building, Users, TrendingUp, Edit, Phone, MessageCircle, Gift, Plus } from 'lucide-react';
+import { ArrowLeft, Share, Heart, MapPin, Calendar, Building, Users, TrendingUp, CreditCard as Edit, Phone, MessageCircle, Gift, Plus, Megaphone } from 'lucide-react';
 import { mockProjects } from '../data/mockData';
 import RoleBasedLayout from '../components/RoleBasedLayout';
 import { mockCurrentUser, mockDeveloperProfile } from '../data/mockData';
@@ -304,12 +304,19 @@ const ProjectDetailsPage: React.FC = () => {
           >
             Edit Project
           </button>
-          <button 
+          <button
+            onClick={() => navigate(`/developer/campaigns/create?projectId=${project.id}`)}
+            className="flex-1 bg-teal-600 text-white py-3 rounded-lg font-medium font-montserrat hover:bg-teal-700 transition-colors flex items-center justify-center"
+          >
+            <Megaphone className="w-5 h-5 mr-2" strokeWidth={1.5} />
+            Campaign
+          </button>
+          <button
             onClick={() => navigate(`/developer/promotions?create=true&propertyId=${project.id}`)}
             className="flex-1 bg-primary-600 text-white py-3 rounded-lg font-medium font-montserrat hover:bg-primary-700 transition-colors flex items-center justify-center"
           >
             <Gift className="w-5 h-5 mr-2" strokeWidth={1.5} />
-            Create Promotion
+            Promotion
           </button>
           <button className="p-3 border border-neutral-300 rounded-lg hover:bg-neutral-50 transition-colors">
             <Phone className="w-5 h-5 text-neutral-600" strokeWidth={1.5} />

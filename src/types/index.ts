@@ -336,3 +336,57 @@ export interface Promotion {
   createdAt: string;
   updatedAt: string;
 }
+
+export type CampaignType = 'launch' | 'promotion' | 'milestone' | 'price_drop' | 'custom';
+export type CampaignStatus = 'draft' | 'active' | 'paused' | 'completed';
+export type SocialPlatform = 'facebook' | 'instagram' | 'twitter' | 'linkedin' | 'whatsapp' | 'other';
+
+export interface Campaign {
+  id: string;
+  projectId?: string;
+  developerId?: string;
+  title: string;
+  description?: string;
+  campaignType: CampaignType;
+  status: CampaignStatus;
+  startDate?: string;
+  endDate?: string;
+  targetPlatforms: SocialPlatform[];
+  creativeAssets: {
+    images?: string[];
+    videos?: string[];
+    projectImage?: string;
+  };
+  contentTemplate: {
+    headline?: string;
+    body?: string;
+    callToAction?: string;
+    hashtags?: string[];
+    variations?: Array<{
+      platform: SocialPlatform;
+      content: string;
+    }>;
+  };
+  performanceMetrics: {
+    shares: number;
+    clicks: number;
+    views: number;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CampaignPost {
+  id: string;
+  campaignId: string;
+  platform: SocialPlatform;
+  content: string;
+  mediaUrls: string[];
+  hashtags: string[];
+  postUrl?: string;
+  isPublished: boolean;
+  scheduledAt?: string;
+  publishedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
