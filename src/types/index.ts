@@ -344,6 +344,7 @@ export type SocialPlatform = 'facebook' | 'instagram' | 'twitter' | 'linkedin' |
 export interface Campaign {
   id: string;
   projectId?: string;
+  agentId?: string;
   developerId?: string;
   title: string;
   description?: string;

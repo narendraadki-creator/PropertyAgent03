@@ -14,10 +14,13 @@ export default function CreateCampaign() {
 
   const [currentStep, setCurrentStep] = useState(1);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [agents, setAgents] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [campaignTarget, setCampaignTarget] = useState<'project' | 'agent'>('project');
 
   const [formData, setFormData] = useState({
     projectId: projectIdFromUrl || '',
+    agentId: '',
     title: '',
     description: '',
     campaignType: 'launch' as CampaignType,
@@ -33,6 +36,7 @@ export default function CreateCampaign() {
 
   useEffect(() => {
     fetchProjects();
+    fetchAgents();
   }, []);
 
   const fetchProjects = async () => {
@@ -47,6 +51,22 @@ export default function CreateCampaign() {
       }
     } catch (error) {
       console.error('Error fetching projects:', error);
+    }
+  };
+
+  const fetchAgents = async () => {
+    try {
+      const { data } = await supabase
+        .from('users')
+        .select('id, name, email, role')
+        .eq('role', 'agent')
+        .order('name', { ascending: true });
+
+      if (data) {
+        setAgents(data);
+      }
+    } catch (error) {
+      console.error('Error fetching agents:', error);
     }
   };
 
@@ -67,7 +87,15 @@ export default function CreateCampaign() {
   };
 
   const handleSaveCampaign = async () => {
-    if (!formData.projectId || !formData.title) {
+    if (campaignTarget === 'project' && !formData.projectId) {
+      alert('Please select a project');
+      return;
+    }
+    if (campaignTarget === 'agent' && !formData.agentId) {
+      alert('Please select an agent');
+      return;
+    }
+    if (!formData.title) {
       alert('Please fill in all required fields');
       return;
     }
@@ -79,7 +107,8 @@ export default function CreateCampaign() {
       const { data, error } = await supabase
         .from('campaigns')
         .insert({
-          project_id: formData.projectId,
+          project_id: campaignTarget === 'project' ? formData.projectId : null,
+          agent_id: campaignTarget === 'agent' ? formData.agentId : null,
           developer_id: user?.id,
           title: formData.title,
           description: formData.description,
@@ -126,7 +155,8 @@ export default function CreateCampaign() {
   const canProceed = () => {
     switch (currentStep) {
       case 1:
-        return formData.projectId && formData.title && formData.campaignType;
+        const hasTarget = campaignTarget === 'project' ? formData.projectId : formData.agentId;
+        return hasTarget && formData.title && formData.campaignType;
       case 2:
         return formData.targetPlatforms.length > 0;
       case 3:
@@ -190,21 +220,83 @@ export default function CreateCampaign() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Select Project <span className="text-red-500">*</span>
+                  Campaign Target <span className="text-red-500">*</span>
                 </label>
-                <select
-                  value={formData.projectId}
-                  onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                >
-                  <option value="">Choose a project...</option>
-                  {projects.map((project) => (
-                    <option key={project.id} value={project.id}>
-                      {project.name} - {project.location}
-                    </option>
-                  ))}
-                </select>
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCampaignTarget('project');
+                      setFormData({ ...formData, agentId: '' });
+                    }}
+                    className={`px-4 py-3 rounded-lg border-2 font-medium transition-all ${
+                      campaignTarget === 'project'
+                        ? 'border-teal-600 bg-teal-50 text-teal-700'
+                        : 'border-gray-300 bg-white text-gray-700 hover:border-teal-400'
+                    }`}
+                  >
+                    Project Campaign
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCampaignTarget('agent');
+                      setFormData({ ...formData, projectId: '' });
+                    }}
+                    className={`px-4 py-3 rounded-lg border-2 font-medium transition-all ${
+                      campaignTarget === 'agent'
+                        ? 'border-teal-600 bg-teal-50 text-teal-700'
+                        : 'border-gray-300 bg-white text-gray-700 hover:border-teal-400'
+                    }`}
+                  >
+                    Agent Campaign
+                  </button>
+                </div>
               </div>
+
+              {campaignTarget === 'project' ? (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Select Project <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={formData.projectId}
+                    onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  >
+                    <option value="">Choose a project...</option>
+                    {projects.map((project) => (
+                      <option key={project.id} value={project.id}>
+                        {project.name} - {project.location}
+                      </option>
+                    ))}
+                  </select>
+                  {projects.length === 0 && (
+                    <p className="text-sm text-gray-500 mt-2">No projects available. Please add a project first.</p>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Select Agent <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={formData.agentId}
+                    onChange={(e) => setFormData({ ...formData, agentId: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  >
+                    <option value="">Choose an agent...</option>
+                    {agents.map((agent) => (
+                      <option key={agent.id} value={agent.id}>
+                        {agent.name} - {agent.email}
+                      </option>
+                    ))}
+                  </select>
+                  {agents.length === 0 && (
+                    <p className="text-sm text-gray-500 mt-2">No agents available in the system.</p>
+                  )}
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
