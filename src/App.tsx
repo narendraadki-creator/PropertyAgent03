@@ -24,7 +24,6 @@ import DeveloperSettings from './pages/DeveloperSettings';
 import AdminProjectDetails from './pages/AdminProjectDetails';
 import AdminUnitManagement from './pages/AdminUnitManagement';
 import AdminProjects from './pages/AdminProjects';
-import AdminLeadDetails from './pages/AdminLeadDetails';
 import AdminBookingDetails from './pages/AdminBookingDetails';
 import AdminAddProject from './pages/AdminAddProject';
 import AdminLeads from './pages/AdminLeads';
