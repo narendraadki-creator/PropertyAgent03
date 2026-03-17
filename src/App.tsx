@@ -35,6 +35,8 @@ import PromotionsPage from './pages/PromotionsPage';
 import DeveloperPromotions from './pages/DeveloperPromotions';
 import DeveloperCampaigns from './pages/DeveloperCampaigns';
 import CreateCampaign from './pages/CreateCampaign';
+import AgentCampaigns from './pages/AgentCampaigns';
+import AgentCreateCampaign from './pages/AgentCreateCampaign';
 import ManagerDashboard from './pages/ManagerDashboard';
 import ManagerAgents from './pages/ManagerAgents';
 import ManagerAgentDetails from './pages/ManagerAgentDetails';
@@ -62,6 +64,8 @@ function App() {
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/promotions" element={<PromotionsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/agent/campaigns" element={<AgentCampaigns />} />
+          <Route path="/agent/campaigns/create" element={<AgentCreateCampaign />} />
           
           {/* Developer Routes */}
           <Route path="/developer/dashboard" element={<DeveloperDashboard />} />

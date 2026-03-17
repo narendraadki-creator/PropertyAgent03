@@ -7,7 +7,7 @@ import SocialMediaPreview from '../components/SocialMediaPreview';
 import SocialMediaShareButton from '../components/SocialMediaShareButton';
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 
-export default function CreateCampaign() {
+export default function AgentCreateCampaign() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const projectIdFromUrl = searchParams.get('projectId');
@@ -111,7 +111,7 @@ export default function CreateCampaign() {
       if (error) throw error;
 
       alert('Campaign created successfully!');
-      navigate('/developer/campaigns');
+      navigate('/agent/campaigns');
     } catch (error) {
       console.error('Error creating campaign:', error);
       alert('Failed to create campaign');
@@ -145,7 +145,7 @@ export default function CreateCampaign() {
       <div className="bg-gradient-to-br from-teal-600 to-teal-700 text-white">
         <div className="max-w-4xl mx-auto px-4 py-8">
           <button
-            onClick={() => navigate('/developer/campaigns')}
+            onClick={() => navigate('/agent/campaigns')}
             className="flex items-center gap-2 text-teal-100 hover:text-white mb-6 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -209,7 +209,7 @@ export default function CreateCampaign() {
                   ))}
                 </select>
                 {projects.length === 0 && (
-                  <p className="text-sm text-gray-500 mt-2">No projects available. Please add a project first.</p>
+                  <p className="text-sm text-gray-500 mt-2">No projects available. Please contact your manager.</p>
                 )}
               </div>
 
