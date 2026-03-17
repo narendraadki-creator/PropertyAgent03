@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Phone, Mail, Star, Tag, Clock, Plus, CheckCircle, Edit, Calendar, MessageCircle, TrendingUp, AlertCircle, Video, FileText, ArrowRight, Save, X, Trash2, Edit2 } from 'lucide-react';
+import { ArrowLeft, Phone, Mail, Star, Tag, Clock, Plus, CheckCircle, CreditCard as Edit, Calendar, MessageCircle, TrendingUp, AlertCircle, Video, FileText, ArrowRight, Save, X, Trash2, CreditCard as Edit2 } from 'lucide-react';
 import { mockLeads, mockTodayReminders } from '../data/mockData';
 import RoleBasedLayout from '../components/RoleBasedLayout';
 import { mockCurrentUser } from '../data/mockData';
@@ -34,10 +34,37 @@ const LeadDetailsPage: React.FC = () => {
     nextFollowUp: leadData?.nextFollowUp || '',
     score: leadData?.score || 5,
     requirements: leadData?.requirements || '',
-    reminders: leadData?.reminders || []
+    reminders: leadData?.reminders || [],
+    tags: leadData?.tags || []
   });
 
   const [editingReminderId, setEditingReminderId] = useState<string | null>(null);
+  const [showTagSelector, setShowTagSelector] = useState(false);
+
+  const availableTags = [
+    'High Budget',
+    'Ready Buyer',
+    'Immediate',
+    'First Time Buyer',
+    'Loan Required',
+    'Investor',
+    'Golf View',
+    'Premium',
+    'IT Professional',
+    'Investment',
+    'Rental Yield'
+  ];
+
+  const handleToggleTag = (tag: string) => {
+    setEditedLead(prev => {
+      const currentTags = prev.tags || [];
+      if (currentTags.includes(tag)) {
+        return { ...prev, tags: currentTags.filter(t => t !== tag) };
+      } else {
+        return { ...prev, tags: [...currentTags, tag] };
+      }
+    });
+  };
 
   if (!leadData) {
     return (
@@ -552,6 +579,77 @@ const LeadDetailsPage: React.FC = () => {
                     <div className={`text-2xl font-bold font-montserrat ${getScoreColor(lead.score)}`}>
                       {lead.score}/10
                     </div>
+                  </div>
+
+                  {/* Tags */}
+                  <div className="p-3 bg-neutral-50 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="text-xs text-neutral-500 font-montserrat">Tags</div>
+                      <Tag className="w-4 h-4 text-neutral-400" strokeWidth={1.5} />
+                    </div>
+
+                    {isEditing ? (
+                      <div>
+                        <button
+                          onClick={() => setShowTagSelector(!showTagSelector)}
+                          className="w-full px-4 py-2 bg-white border border-neutral-200 rounded-lg text-neutral-700 font-montserrat font-medium hover:bg-neutral-50 transition-colors flex items-center justify-between"
+                        >
+                          <span>Manage Tags</span>
+                          <Tag className="w-4 h-4" strokeWidth={1.5} />
+                        </button>
+
+                        {showTagSelector && (
+                          <div className="mt-3 p-3 bg-white border border-neutral-200 rounded-lg">
+                            <div className="flex flex-wrap gap-2 mb-3">
+                              {availableTags.map((tag) => (
+                                <button
+                                  key={tag}
+                                  onClick={() => handleToggleTag(tag)}
+                                  className={`px-3 py-1.5 rounded-lg text-sm font-medium font-montserrat transition-all ${
+                                    (editedLead.tags || []).includes(tag)
+                                      ? 'bg-primary-600 text-white shadow-sm'
+                                      : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+                                  }`}
+                                >
+                                  {tag}
+                                </button>
+                              ))}
+                            </div>
+                            <p className="text-xs text-neutral-500 font-montserrat">
+                              Click tags to add or remove them
+                            </p>
+                          </div>
+                        )}
+
+                        {(editedLead.tags && editedLead.tags.length > 0) && (
+                          <div className="flex flex-wrap gap-1.5 mt-3">
+                            {editedLead.tags.map((tag, index) => (
+                              <span key={index} className="px-2 py-1 bg-primary-100 text-primary-700 text-xs font-medium font-montserrat rounded-md flex items-center">
+                                {tag}
+                                <button
+                                  onClick={() => handleToggleTag(tag)}
+                                  className="ml-1.5 hover:text-primary-900"
+                                >
+                                  <X className="w-3 h-3" strokeWidth={2} />
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap gap-1.5">
+                        {lead.tags && lead.tags.length > 0 ? (
+                          lead.tags.map((tag, index) => (
+                            <span key={index} className="px-2 py-1 bg-neutral-100 text-neutral-600 text-xs font-medium font-montserrat rounded-md">
+                              {tag}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-sm text-neutral-400 font-montserrat">No tags</span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
