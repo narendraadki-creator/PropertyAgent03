@@ -90,7 +90,7 @@ export default function CreateCampaign() {
         .from('campaigns')
         .insert({
           project_id: formData.projectId,
-          agent_id: user?.id,
+          developer_id: user?.id || null,
           title: formData.title,
           description: formData.description,
           campaign_type: formData.campaignType,
@@ -114,13 +114,16 @@ export default function CreateCampaign() {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
       alert('Campaign created successfully!');
       navigate('/developer/campaigns');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating campaign:', error);
-      alert('Failed to create campaign');
+      alert(`Failed to create campaign: ${error.message || 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
