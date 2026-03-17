@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, FileText, Calendar, MessageCircle, User, Bell, TrendingUp } from 'lucide-react';
+import { Home, FileText, Calendar, MessageCircle, User, Bell, TrendingUp, Megaphone } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { mockNotifications } from '../data/mockData';
 
@@ -13,7 +13,7 @@ const AgentBottomNavigation: React.FC = () => {
     { icon: Home, label: 'Home', path: '/', active: location.pathname === '/' },
     { icon: TrendingUp, label: 'Trends', path: '/market-trends', active: location.pathname === '/market-trends' },
     { icon: FileText, label: 'Leads', path: '/leads', active: location.pathname === '/leads' },
-    { icon: Calendar, label: 'Bookings', path: '/bookings', active: location.pathname === '/bookings' },
+    { icon: Megaphone, label: 'Campaigns', path: '/agent/campaigns', active: location.pathname.startsWith('/agent/campaigns') },
     { icon: Bell, label: 'Alerts', path: '/notifications', active: location.pathname === '/notifications', badge: unreadCount },
     { icon: User, label: 'Profile', path: '/profile', active: location.pathname === '/profile' },
   ];
