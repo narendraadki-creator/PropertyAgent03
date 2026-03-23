@@ -45,13 +45,24 @@ Using invalid campaign types. Only these are allowed:
 ## Issue: No Authentication / User Not Found
 
 ### Problem
-Error: "You must be logged in to seed campaign data"
+Error: "You must be logged in to seed campaign data" or "Authentication required"
 
-### Solution
-1. Check if you're logged in (top-right corner)
-2. If not, sign up or log in
-3. Ensure you're using Agent role
-4. Try seeding again
+### Root Cause
+The authentication session hasn't fully loaded when you click "Add Sample Data"
+
+### Solution (MOST COMMON FIX)
+1. **Refresh the page completely** (Ctrl+Shift+R or Cmd+Shift+R)
+2. Wait 2-3 seconds for auth to load
+3. Navigate to Campaigns page
+4. Click "Add Sample Data" again
+5. Should work now!
+
+### Alternative Solutions
+- Check if you're logged in (top-right corner should show your profile)
+- If not logged in, sign up or log in first
+- Ensure you're using Agent role
+- Check browser console for auth errors
+- Try logging out and back in
 
 ---
 

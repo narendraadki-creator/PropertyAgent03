@@ -93,6 +93,15 @@ export default function AgentCampaigns() {
   const handleSeedData = async () => {
     setLoading(true);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      console.log('Current user before seeding:', user ? user.id : 'No user found');
+
+      if (!user) {
+        alert('Please refresh the page and try again. You must be logged in to add sample data.');
+        setLoading(false);
+        return;
+      }
+
       await seedCampaignData();
       await fetchCampaigns();
       alert('Sample campaign data added successfully! Click on any campaign to view details.');

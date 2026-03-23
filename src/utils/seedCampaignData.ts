@@ -2,11 +2,16 @@ import { supabase } from '../lib/supabase';
 
 export async function seedCampaignData() {
   try {
+    const { data: { session } } = await supabase.auth.getSession();
     const { data: { user } } = await supabase.auth.getUser();
 
+    console.log('Auth check - Session:', session ? 'exists' : 'null', 'User:', user ? user.id.substring(0, 8) + '...' : 'null');
+
     if (!user) {
-      throw new Error('You must be logged in to seed campaign data');
+      throw new Error('Authentication required. Please refresh the page and try again.');
     }
+
+    const agentId = user.id;
 
     let { data: projects } = await supabase
       .from('projects')
@@ -73,7 +78,7 @@ export async function seedCampaignData() {
     const sampleCampaigns = [
       {
         project_id: projects[0].id,
-        agent_id: user.id,
+        agent_id: agentId,
         title: 'Luxury Waterfront Living Campaign',
         description: 'Premium campaign targeting high-net-worth individuals interested in waterfront properties',
         campaign_type: 'launch',
@@ -108,7 +113,7 @@ export async function seedCampaignData() {
       },
       {
         project_id: projects[1]?.id || projects[0].id,
-        agent_id: user.id,
+        agent_id: agentId,
         title: 'First-Time Buyer Special',
         description: 'Affordable housing campaign with flexible payment plans',
         campaign_type: 'promotion',
@@ -136,7 +141,7 @@ export async function seedCampaignData() {
       },
       {
         project_id: projects[2]?.id || projects[0].id,
-        agent_id: user.id,
+        agent_id: agentId,
         title: 'Investment Opportunity ROI Focus',
         description: 'High-return investment properties for smart investors',
         campaign_type: 'price_drop',

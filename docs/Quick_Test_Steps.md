@@ -2,16 +2,24 @@
 
 ## 🚀 Quick Start (5 Minutes)
 
+### Step 0: CRITICAL FIRST STEP
+1. **Refresh the page completely**: Ctrl+Shift+R (Windows) or Cmd+Shift+R (Mac)
+2. **Wait 2-3 seconds** for authentication to load
+3. **Verify top-right shows your profile** (confirms you're logged in)
+   - If not logged in, sign up or log in first
+4. ⚠️ **SKIP THIS STEP = "Must be logged in" ERROR!**
+
 ### Step 1: Navigate to Campaigns
 1. Switch to **Agent role** (if role selector exists)
 2. Click **"Campaigns"** in bottom navigation
 3. ✅ Page loads showing "My Campaigns"
 
 ### Step 2: Add Sample Data
-1. Click **"Add Sample Data"** button (purple button)
+1. Click **"Add Sample Data"** button (purple button with database icon)
 2. Wait 5-10 seconds
-3. ✅ See success alert
-4. ✅ See 3 campaign cards appear
+3. ✅ See success alert: "Sample campaign data added successfully!"
+4. Click "OK"
+5. ✅ See 3 campaign cards appear
 
 ### Step 3: View Campaign Details
 1. Click on **"Luxury Waterfront Living Campaign"** card
