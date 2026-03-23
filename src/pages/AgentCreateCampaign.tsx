@@ -23,6 +23,7 @@ export default function AgentCreateCampaign() {
     campaignType: 'launch' as CampaignType,
     startDate: '',
     endDate: '',
+    budget: '',
     targetPlatforms: [] as SocialPlatform[],
     customMessage: ''
   });
@@ -95,6 +96,7 @@ export default function AgentCreateCampaign() {
           description: formData.description,
           campaign_type: formData.campaignType,
           status: 'draft',
+          budget: formData.budget ? parseFloat(formData.budget) : null,
           start_date: formData.startDate || null,
           end_date: formData.endDate || null,
           target_platforms: formData.targetPlatforms,
@@ -267,6 +269,19 @@ export default function AgentCreateCampaign() {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Budget (AED)
+                </label>
+                <input
+                  type="number"
+                  value={formData.budget}
+                  onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
+                  placeholder="e.g., 50000"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-4">

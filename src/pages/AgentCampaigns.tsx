@@ -228,14 +228,14 @@ export default function AgentCampaigns() {
               <div
                 key={campaign.id}
                 onClick={() => navigate(`/agent/campaigns/${campaign.id}`)}
-                className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-lg transition-shadow cursor-pointer"
+                className="bg-white rounded-lg border border-gray-200 p-5 hover:shadow-lg transition-shadow cursor-pointer"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
                     <h3 className="font-semibold text-gray-900 mb-1">{campaign.title}</h3>
                     <p className="text-sm text-gray-600 line-clamp-2">{campaign.description}</p>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ml-2 ${
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ml-2 flex-shrink-0 ${
                     campaign.status === 'active' ? 'bg-green-100 text-green-800' :
                     campaign.status === 'paused' ? 'bg-yellow-100 text-yellow-800' :
                     campaign.status === 'completed' ? 'bg-blue-100 text-blue-800' :
@@ -245,20 +245,39 @@ export default function AgentCampaigns() {
                   </span>
                 </div>
 
-                <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
-                  {campaign.targetPlatforms && campaign.targetPlatforms.length > 0 && (
-                    <div className="flex items-center gap-1">
-                      {campaign.targetPlatforms.slice(0, 3).map((platform: string, i: number) => (
-                        <span key={i} className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center text-xs">
-                          {platform[0]}
-                        </span>
-                      ))}
+                <div className="space-y-2 mb-3">
+                  {campaign.budget && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">Budget:</span>
+                      <span className="font-semibold text-teal-600">AED {campaign.budget.toLocaleString()}</span>
                     </div>
                   )}
-                  <span>{campaign.campaignType || 'General'}</span>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600">Duration:</span>
+                    <span className="text-gray-900">
+                      {campaign.startDate ? new Date(campaign.startDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : 'Not set'} -
+                      {campaign.endDate ? new Date(campaign.endDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : 'Ongoing'}
+                    </span>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3 pt-3 border-t border-gray-100">
+                <div className="flex items-center gap-4 text-sm text-gray-600 mb-3 pb-3 border-b border-gray-100">
+                  {campaign.targetPlatforms && campaign.targetPlatforms.length > 0 && (
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-gray-500 mr-1">Platforms:</span>
+                      {campaign.targetPlatforms.slice(0, 3).map((platform: string, i: number) => (
+                        <span key={i} className="px-2 py-0.5 bg-gray-100 rounded text-xs capitalize">
+                          {platform}
+                        </span>
+                      ))}
+                      {campaign.targetPlatforms.length > 3 && (
+                        <span className="text-xs text-gray-500">+{campaign.targetPlatforms.length - 3}</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-3 gap-3">
                   <div>
                     <p className="text-xs text-gray-500">Views</p>
                     <p className="text-lg font-semibold text-gray-900">
