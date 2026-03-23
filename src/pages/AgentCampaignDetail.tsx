@@ -83,28 +83,34 @@ export default function AgentCampaignDetail() {
   };
 
   const handleDuplicate = async () => {
+    console.log('Duplicate button clicked');
+    console.log('Current campaign:', campaign);
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
+      console.log('Current user:', user?.id);
 
       const newCampaign = {
         project_id: campaign.project_id,
         agent_id: user?.id || campaign.agent_id,
         title: `${campaign.title} (Copy)`,
-        description: campaign.description,
+        description: campaign.description || '',
         campaign_type: campaign.campaign_type,
         status: 'draft',
-        budget: campaign.budget,
+        budget: campaign.budget || 0,
         start_date: campaign.start_date,
         end_date: campaign.end_date,
-        target_platforms: campaign.target_platforms,
-        creative_assets: campaign.creative_assets,
-        content_template: campaign.content_template,
+        target_platforms: campaign.target_platforms || [],
+        creative_assets: campaign.creative_assets || {},
+        content_template: campaign.content_template || {},
         performance_metrics: {
           shares: 0,
           clicks: 0,
           views: 0
         }
       };
+
+      console.log('Creating new campaign:', newCampaign);
 
       const { data, error } = await supabase
         .from('campaigns')
@@ -118,13 +124,15 @@ export default function AgentCampaignDetail() {
         return;
       }
 
+      console.log('Campaign duplicated successfully:', data);
+
       if (data) {
         alert('Campaign duplicated successfully!');
         navigate(`/agent/campaigns/${data.id}`);
       }
     } catch (error: any) {
       console.error('Error duplicating campaign:', error);
-      alert('Failed to duplicate campaign: ' + error.message);
+      alert('Failed to duplicate campaign: ' + (error?.message || 'Unknown error'));
     }
   };
 
@@ -195,14 +203,22 @@ export default function AgentCampaignDetail() {
 
             <div className="flex items-center gap-2">
               <button
-                onClick={() => handleDuplicate()}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleDuplicate();
+                }}
                 className="flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded-lg hover:bg-white/20 transition-colors"
               >
                 <Copy className="w-4 h-4" />
                 Duplicate
               </button>
               <button
-                onClick={() => navigate(`/agent/campaigns/${id}/edit`)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  navigate(`/agent/campaigns/${id}/edit`);
+                }}
                 className="flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded-lg hover:bg-white/20 transition-colors"
               >
                 <Edit className="w-4 h-4" />

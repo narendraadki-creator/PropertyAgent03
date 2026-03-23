@@ -37,11 +37,15 @@ export default function AgentEditCampaign() {
   }, [id]);
 
   const fetchData = async () => {
+    console.log('Fetching campaign data for edit page, ID:', id);
     try {
       const [projectsRes, campaignRes] = await Promise.all([
         supabase.from('projects').select('*').order('created_at', { ascending: false }),
         supabase.from('campaigns').select('*').eq('id', id).maybeSingle()
       ]);
+
+      console.log('Projects loaded:', projectsRes.data?.length);
+      console.log('Campaign loaded:', campaignRes.data);
 
       if (projectsRes.data) {
         setProjects(projectsRes.data as any);
@@ -49,6 +53,8 @@ export default function AgentEditCampaign() {
 
       if (campaignRes.data) {
         const campaign = campaignRes.data;
+        console.log('Setting form data from campaign:', campaign);
+
         setFormData({
           projectId: campaign.project_id || '',
           title: campaign.title || '',
@@ -70,6 +76,8 @@ export default function AgentEditCampaign() {
         if (campaign.target_platforms?.[0]) {
           setPreviewPlatform(campaign.target_platforms[0]);
         }
+      } else {
+        console.error('No campaign found with ID:', id);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
