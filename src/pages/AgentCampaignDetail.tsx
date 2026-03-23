@@ -457,8 +457,9 @@ export default function AgentCampaignDetail() {
             <SmartBudgetSplit
               totalBudget={campaign.budget || 10000}
               distribution={campaign.channel_budget_split || { facebook: 2500, instagram: 4000, google: 2000, whatsapp: 1500 }}
-              onChange={(distribution) => {
-                supabase.from('campaigns').update({ channel_budget_split: distribution }).eq('id', id);
+              onChange={async (distribution) => {
+                setCampaign({ ...campaign, channel_budget_split: distribution });
+                await supabase.from('campaigns').update({ channel_budget_split: distribution }).eq('id', id);
               }}
             />
 
