@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Pause, CreditCard as Edit, BarChart3, Copy, Plus, Clock, Facebook, Instagram, Globe, MessageCircle, Target, TrendingUp, Users, Mail, Phone, Star, CheckCircle, AlertCircle, Activity, Sparkles, X } from 'lucide-react';
+import { ArrowLeft, Play, Pause, CreditCard as Edit, BarChart3, Copy, Plus, Clock, Facebook, Instagram, Globe, MessageCircle, Target, TrendingUp, Users, Mail, Phone, Star, CheckCircle, AlertCircle, Activity, Sparkles, X, ArrowUpDown } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import AICampaignScore from '../components/AICampaignScore';
 import AIAudienceBuilder from '../components/AIAudienceBuilder';
@@ -19,6 +19,8 @@ export default function AgentCampaignDetail() {
   const [activeTab, setActiveTab] = useState<'overview' | 'leads' | 'analytics' | 'automation'>('overview');
   const [showPropertyModal, setShowPropertyModal] = useState(false);
   const [availableProperties, setAvailableProperties] = useState<any[]>([]);
+  const [sortField, setSortField] = useState<'name' | 'priority_score' | 'status' | 'source'>('priority_score');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
   useEffect(() => {
     fetchCampaignData();
@@ -164,10 +166,35 @@ export default function AgentCampaignDetail() {
   };
 
   const getPriorityColor = (score: number) => {
-    if (score >= 80) return 'text-red-600';
-    if (score >= 60) return 'text-yellow-600';
-    return 'text-gray-600';
+    if (score >= 80) return 'text-red-600 fill-red-600';
+    if (score >= 60) return 'text-yellow-600 fill-yellow-600';
+    return 'text-gray-400 fill-gray-400';
   };
+
+  const handleSort = (field: 'name' | 'priority_score' | 'status' | 'source') => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('desc');
+    }
+  };
+
+  const sortedLeads = [...leads].sort((a, b) => {
+    let comparison = 0;
+
+    if (sortField === 'name') {
+      comparison = a.name.localeCompare(b.name);
+    } else if (sortField === 'priority_score') {
+      comparison = (a.priority_score || 0) - (b.priority_score || 0);
+    } else if (sortField === 'status') {
+      comparison = (a.status || '').localeCompare(b.status || '');
+    } else if (sortField === 'source') {
+      comparison = (a.source || '').localeCompare(b.source || '');
+    }
+
+    return sortDirection === 'asc' ? comparison : -comparison;
+  });
 
   const handleAddProperty = async (propertyId: string, isSuggested: boolean = false) => {
     try {
@@ -580,66 +607,112 @@ export default function AgentCampaignDetail() {
           <div className="p-6">
             {activeTab === 'leads' && (
               <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-gray-900">Campaign Leads</h3>
-                  <button className="flex items-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors text-sm">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="font-semibold text-gray-900 text-lg">Campaign Leads</h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {leads.length} {leads.length === 1 ? 'lead' : 'leads'} generated
+                    </p>
+                  </div>
+                  <button className="flex items-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors text-sm shadow-sm">
                     <Plus className="w-4 h-4" />
                     Add Lead
                   </button>
                 </div>
 
                 {leads.length > 0 ? (
-                  <div className="overflow-x-auto">
+                  <div className="overflow-x-auto bg-white border border-gray-200 rounded-lg">
                     <table className="w-full">
-                      <thead>
+                      <thead className="bg-gray-50">
                         <tr className="border-b border-gray-200">
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Name</th>
+                          <th
+                            onClick={() => handleSort('name')}
+                            className="text-left py-3 px-4 text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-100 transition-colors"
+                          >
+                            <div className="flex items-center gap-2">
+                              Name
+                              <ArrowUpDown className="w-3 h-3 text-gray-400" />
+                            </div>
+                          </th>
                           <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Contact</th>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Source</th>
+                          <th
+                            onClick={() => handleSort('source')}
+                            className="text-left py-3 px-4 text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-100 transition-colors"
+                          >
+                            <div className="flex items-center gap-2">
+                              Source
+                              <ArrowUpDown className="w-3 h-3 text-gray-400" />
+                            </div>
+                          </th>
                           <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Budget</th>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Priority</th>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Status</th>
+                          <th
+                            onClick={() => handleSort('priority_score')}
+                            className="text-left py-3 px-4 text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-100 transition-colors"
+                          >
+                            <div className="flex items-center gap-2">
+                              Priority
+                              <ArrowUpDown className="w-3 h-3 text-gray-400" />
+                            </div>
+                          </th>
+                          <th
+                            onClick={() => handleSort('status')}
+                            className="text-left py-3 px-4 text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-100 transition-colors"
+                          >
+                            <div className="flex items-center gap-2">
+                              Status
+                              <ArrowUpDown className="w-3 h-3 text-gray-400" />
+                            </div>
+                          </th>
                         </tr>
                       </thead>
-                      <tbody>
-                        {leads.map((lead: any) => (
-                          <tr key={lead.id} className="border-b border-gray-100 hover:bg-gray-50">
-                            <td className="py-3 px-4">
+                      <tbody className="divide-y divide-gray-100">
+                        {sortedLeads.map((lead: any) => (
+                          <tr key={lead.id} className="hover:bg-gray-50 transition-colors">
+                            <td className="py-4 px-4">
                               <div className="font-medium text-gray-900">{lead.name}</div>
                             </td>
-                            <td className="py-3 px-4">
-                              <div className="flex flex-col gap-1 text-sm">
+                            <td className="py-4 px-4">
+                              <div className="flex flex-col gap-1.5 text-sm">
                                 {lead.email && (
-                                  <div className="flex items-center gap-1 text-gray-600">
-                                    <Mail className="w-3 h-3" />
-                                    {lead.email}
+                                  <div className="flex items-center gap-1.5 text-gray-600">
+                                    <Mail className="w-3.5 h-3.5 text-gray-400" />
+                                    <span>{lead.email}</span>
                                   </div>
                                 )}
                                 {lead.phone && (
-                                  <div className="flex items-center gap-1 text-gray-600">
-                                    <Phone className="w-3 h-3" />
-                                    {lead.phone}
+                                  <div className="flex items-center gap-1.5 text-gray-600">
+                                    <Phone className="w-3.5 h-3.5 text-gray-400" />
+                                    <span>{lead.phone}</span>
                                   </div>
                                 )}
                               </div>
                             </td>
-                            <td className="py-3 px-4">
-                              <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
+                            <td className="py-4 px-4">
+                              <span className="inline-flex items-center px-2.5 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full capitalize">
                                 {lead.source}
                               </span>
                             </td>
-                            <td className="py-3 px-4 text-sm text-gray-600">{lead.budget_range || '-'}</td>
-                            <td className="py-3 px-4">
-                              <div className="flex items-center gap-1">
+                            <td className="py-4 px-4 text-sm text-gray-600 font-medium">
+                              {lead.budget_range || '-'}
+                            </td>
+                            <td className="py-4 px-4">
+                              <div className="flex items-center gap-2">
                                 <Star className={`w-4 h-4 ${getPriorityColor(lead.priority_score)}`} />
-                                <span className="text-sm font-medium">{lead.priority_score}</span>
+                                <span className={`text-sm font-semibold ${
+                                  lead.priority_score >= 80 ? 'text-red-600' :
+                                  lead.priority_score >= 60 ? 'text-yellow-600' :
+                                  'text-gray-600'
+                                }`}>
+                                  {Math.round(lead.priority_score)}
+                                </span>
                               </div>
                             </td>
-                            <td className="py-3 px-4">
-                              <span className={`px-2 py-1 text-xs rounded-full ${
+                            <td className="py-4 px-4">
+                              <span className={`inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full capitalize ${
                                 lead.status === 'new' ? 'bg-blue-100 text-blue-700' :
                                 lead.status === 'contacted' ? 'bg-yellow-100 text-yellow-700' :
-                                'bg-green-100 text-green-700'
+                                lead.status === 'qualified' ? 'bg-green-100 text-green-700' :
+                                'bg-gray-100 text-gray-700'
                               }`}>
                                 {lead.status}
                               </span>
@@ -650,10 +723,14 @@ export default function AgentCampaignDetail() {
                     </table>
                   </div>
                 ) : (
-                  <div className="text-center py-12">
-                    <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                    <p className="text-gray-600">No leads yet</p>
-                    <p className="text-sm text-gray-500 mt-1">Leads will appear here when your campaign is active</p>
+                  <div className="text-center py-16 bg-white border border-gray-200 rounded-lg">
+                    <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <h4 className="text-lg font-medium text-gray-900 mb-2">No leads yet</h4>
+                    <p className="text-sm text-gray-500 mb-4">Leads will appear here when your campaign is active</p>
+                    <button className="inline-flex items-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors text-sm">
+                      <Plus className="w-4 h-4" />
+                      Add Your First Lead
+                    </button>
                   </div>
                 )}
               </div>
