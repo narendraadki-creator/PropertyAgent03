@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { MapPin, TrendingUp, Users, ZoomIn, ZoomOut, Map as MapIcon } from 'lucide-react';
-import LeafletMap from './LeafletMap';
+import { MapPin, TrendingUp, Users, ZoomIn, ZoomOut } from 'lucide-react';
 
 interface Lead {
   id: string;
@@ -34,7 +33,6 @@ export default function GeoHeatmap({ leads, onLeadClick }: GeoHeatmapProps) {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [hoveredCluster, setHoveredCluster] = useState<Cluster | null>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [viewMode, setViewMode] = useState<'heatmap' | 'map'>('map');
 
   const leadsWithLocation = leads.filter(lead => lead.latitude && lead.longitude);
 
@@ -310,72 +308,40 @@ export default function GeoHeatmap({ leads, onLeadClick }: GeoHeatmapProps) {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-semibold text-gray-900">Geographic Distribution</h3>
-              <p className="text-sm text-gray-600">
-                {viewMode === 'map' ? 'Interactive map showing lead locations' : 'Interactive heatmap showing lead concentration'}
-              </p>
+              <p className="text-sm text-gray-600">Interactive heatmap showing lead concentration</p>
             </div>
             <div className="flex gap-2">
-              <div className="flex bg-white border border-gray-300 rounded-lg overflow-hidden">
-                <button
-                  onClick={() => setViewMode('map')}
-                  className={`px-3 py-2 text-sm font-medium transition-colors ${
-                    viewMode === 'map'
-                      ? 'bg-teal-600 text-white'
-                      : 'text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  <MapIcon className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setViewMode('heatmap')}
-                  className={`px-3 py-2 text-sm font-medium transition-colors ${
-                    viewMode === 'heatmap'
-                      ? 'bg-teal-600 text-white'
-                      : 'text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  <TrendingUp className="w-4 h-4" />
-                </button>
-              </div>
-              {viewMode === 'heatmap' && (
-                <>
-                  <button
-                    onClick={handleZoomOut}
-                    className="p-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                    title="Zoom Out"
-                  >
-                    <ZoomOut className="w-5 h-5 text-gray-700" />
-                  </button>
-                  <button
-                    onClick={handleZoomIn}
-                    className="p-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                    title="Zoom In"
-                  >
-                    <ZoomIn className="w-5 h-5 text-gray-700" />
-                  </button>
-                </>
-              )}
+              <button
+                onClick={handleZoomOut}
+                className="p-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                title="Zoom Out"
+              >
+                <ZoomOut className="w-5 h-5 text-gray-700" />
+              </button>
+              <button
+                onClick={handleZoomIn}
+                className="p-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                title="Zoom In"
+              >
+                <ZoomIn className="w-5 h-5 text-gray-700" />
+              </button>
             </div>
           </div>
         </div>
 
         <div className="relative">
-          {viewMode === 'map' ? (
-            <LeafletMap leads={leads} onLeadClick={onLeadClick} />
-          ) : (
-            <canvas
-              ref={canvasRef}
-              width={1200}
-              height={600}
-              className="w-full cursor-move"
-              onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
-            />
-          )}
+          <canvas
+            ref={canvasRef}
+            width={1200}
+            height={600}
+            className="w-full cursor-move"
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+          />
 
-          {viewMode === 'heatmap' && hoveredCluster && (
+          {hoveredCluster && (
             <div
               className="absolute bg-gray-900 text-white px-4 py-3 rounded-lg shadow-xl pointer-events-none z-10 max-w-xs"
               style={{
@@ -402,25 +368,23 @@ export default function GeoHeatmap({ leads, onLeadClick }: GeoHeatmapProps) {
             </div>
           )}
 
-          {viewMode === 'heatmap' && (
-            <div className="absolute bottom-4 right-4 bg-white rounded-lg shadow-lg p-3 border border-gray-200">
-              <div className="text-xs font-semibold text-gray-700 mb-2">Heat Intensity</div>
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-red-500"></div>
-                  <span className="text-xs text-gray-600">High (10+)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-orange-500"></div>
-                  <span className="text-xs text-gray-600">Medium (5-9)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-blue-500"></div>
-                  <span className="text-xs text-gray-600">Low (1-4)</span>
-                </div>
+          <div className="absolute bottom-4 right-4 bg-white rounded-lg shadow-lg p-3 border border-gray-200">
+            <div className="text-xs font-semibold text-gray-700 mb-2">Heat Intensity</div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded-full bg-red-500"></div>
+                <span className="text-xs text-gray-600">High (10+)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded-full bg-orange-500"></div>
+                <span className="text-xs text-gray-600">Medium (5-9)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded-full bg-blue-500"></div>
+                <span className="text-xs text-gray-600">Low (1-4)</span>
               </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
 
