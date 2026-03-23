@@ -22,6 +22,11 @@ export default function AgentCampaignDetail() {
   const [availableProperties, setAvailableProperties] = useState<any[]>([]);
   const [sortField, setSortField] = useState<'name' | 'priority_score' | 'status' | 'source'>('priority_score');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [automationSettings, setAutomationSettings] = useState({
+    autoFollowUp: true,
+    whatsappAutoReply: false,
+    smartLeadPrioritization: true
+  });
 
   useEffect(() => {
     fetchCampaignData();
@@ -63,6 +68,14 @@ export default function AgentCampaignDetail() {
 
       if (campaignRes.data) {
         setCampaign(campaignRes.data);
+
+        if (campaignRes.data.automation_settings) {
+          setAutomationSettings({
+            autoFollowUp: campaignRes.data.automation_settings.autoFollowUp ?? true,
+            whatsappAutoReply: campaignRes.data.automation_settings.whatsappAutoReply ?? false,
+            smartLeadPrioritization: campaignRes.data.automation_settings.smartLeadPrioritization ?? true
+          });
+        }
       } else {
         console.log('No campaign found with ID:', id);
       }
@@ -83,6 +96,32 @@ export default function AgentCampaignDetail() {
       console.error('Error fetching campaign data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAutomationToggle = async (setting: 'autoFollowUp' | 'whatsappAutoReply' | 'smartLeadPrioritization') => {
+    const newSettings = {
+      ...automationSettings,
+      [setting]: !automationSettings[setting]
+    };
+
+    setAutomationSettings(newSettings);
+
+    try {
+      await supabase
+        .from('campaigns')
+        .update({ automation_settings: newSettings })
+        .eq('id', id);
+
+      await supabase.from('campaign_activities').insert({
+        campaign_id: id,
+        activity_type: 'automation_change',
+        description: `${setting === 'autoFollowUp' ? 'Auto-follow-up messages' : setting === 'whatsappAutoReply' ? 'WhatsApp auto-reply' : 'Smart lead prioritization'} ${newSettings[setting] ? 'enabled' : 'disabled'}`,
+        metadata: { setting, enabled: newSettings[setting] }
+      });
+    } catch (error) {
+      console.error('Error updating automation settings:', error);
+      setAutomationSettings(automationSettings);
     }
   };
 
@@ -969,75 +1008,134 @@ export default function AgentCampaignDetail() {
 
             {activeTab === 'automation' && (
               <div>
-                <h3 className="font-semibold text-gray-900 mb-4">Automation Settings</h3>
+                <h3 className="font-semibold text-gray-900 text-lg mb-6">Automation Settings</h3>
 
-                <div className="space-y-4 mb-6">
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="font-medium text-gray-900">Auto-follow-up messages</p>
-                      <p className="text-sm text-gray-600">Automatically send follow-up messages to new leads</p>
+                <div className="space-y-4 mb-8">
+                  <div className="flex items-center justify-between p-5 bg-gradient-to-r from-teal-50 to-white border border-teal-100 rounded-xl hover:shadow-md transition-shadow">
+                    <div className="flex items-start gap-4">
+                      <div className="p-2.5 bg-teal-100 rounded-lg">
+                        <Mail className="w-5 h-5 text-teal-600" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900 mb-1">Auto-follow-up messages</p>
+                        <p className="text-sm text-gray-600">Automatically send follow-up messages to new leads within 24 hours</p>
+                      </div>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" defaultChecked />
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={automationSettings.autoFollowUp}
+                        onChange={() => handleAutomationToggle('autoFollowUp')}
+                      />
                       <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-teal-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
                     </label>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="font-medium text-gray-900">WhatsApp auto-reply</p>
-                      <p className="text-sm text-gray-600">Send automated responses to WhatsApp inquiries</p>
+                  <div className="flex items-center justify-between p-5 bg-gradient-to-r from-green-50 to-white border border-green-100 rounded-xl hover:shadow-md transition-shadow">
+                    <div className="flex items-start gap-4">
+                      <div className="p-2.5 bg-green-100 rounded-lg">
+                        <MessageCircle className="w-5 h-5 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900 mb-1">WhatsApp auto-reply</p>
+                        <p className="text-sm text-gray-600">Send automated responses to WhatsApp inquiries instantly</p>
+                      </div>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" />
-                      <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-teal-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={automationSettings.whatsappAutoReply}
+                        onChange={() => handleAutomationToggle('whatsappAutoReply')}
+                      />
+                      <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
                     </label>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="font-medium text-gray-900">Smart lead prioritization</p>
-                      <p className="text-sm text-gray-600">AI automatically scores and prioritizes leads</p>
+                  <div className="flex items-center justify-between p-5 bg-gradient-to-r from-blue-50 to-white border border-blue-100 rounded-xl hover:shadow-md transition-shadow">
+                    <div className="flex items-start gap-4">
+                      <div className="p-2.5 bg-blue-100 rounded-lg">
+                        <Sparkles className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900 mb-1">Smart lead prioritization</p>
+                        <p className="text-sm text-gray-600">AI automatically scores and prioritizes leads based on engagement</p>
+                      </div>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" defaultChecked />
-                      <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-teal-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={automationSettings.smartLeadPrioritization}
+                        onChange={() => handleAutomationToggle('smartLeadPrioritization')}
+                      />
+                      <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                     </label>
                   </div>
                 </div>
 
-                <div className="border border-gray-200 rounded-lg p-4">
-                  <h4 className="font-medium text-gray-900 mb-3">Follow-up Sequence</h4>
-                  <div className="space-y-3">
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
-                        <CheckCircle className="w-4 h-4 text-teal-600" />
+                {automationSettings.autoFollowUp && (
+                  <div className="border border-gray-200 rounded-xl p-6 bg-white shadow-sm">
+                    <div className="flex items-center gap-2 mb-5">
+                      <Clock className="w-5 h-5 text-gray-600" />
+                      <h4 className="font-semibold text-gray-900">Automated Follow-up Sequence</h4>
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-4 p-4 bg-teal-50 rounded-lg border border-teal-100">
+                        <div className="w-10 h-10 rounded-full bg-teal-600 flex items-center justify-center flex-shrink-0">
+                          <CheckCircle className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="font-semibold text-gray-900">Day 1: Welcome message</p>
+                            <span className="px-2 py-0.5 bg-teal-100 text-teal-700 text-xs font-medium rounded-full">Immediate</span>
+                          </div>
+                          <p className="text-sm text-gray-700 mb-2">Send personalized introduction with property details and viewing options</p>
+                          <p className="text-xs text-gray-500 italic">Sent automatically when lead is captured</p>
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <p className="font-medium text-gray-900">Day 1: Welcome message</p>
-                        <p className="text-sm text-gray-600">Send introduction and property details</p>
+
+                      <div className="flex items-start gap-4 p-4 bg-amber-50 rounded-lg border border-amber-100">
+                        <div className="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center flex-shrink-0">
+                          <AlertCircle className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="font-semibold text-gray-900">Day 3: Follow-up reminder</p>
+                            <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-medium rounded-full">72 hours</span>
+                          </div>
+                          <p className="text-sm text-gray-700 mb-2">Check if they have questions or need additional information</p>
+                          <p className="text-xs text-gray-500 italic">Skipped if lead has already responded</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-4 p-4 bg-blue-50 rounded-lg border border-blue-100">
+                        <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
+                          <Star className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="font-semibold text-gray-900">Day 7: Special offer</p>
+                            <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">1 week</span>
+                          </div>
+                          <p className="text-sm text-gray-700 mb-2">Share exclusive promotion, limited-time discount, or priority viewing slot</p>
+                          <p className="text-xs text-gray-500 italic">Final automated touchpoint before manual follow-up</p>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center flex-shrink-0">
-                        <AlertCircle className="w-4 h-4 text-yellow-600" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium text-gray-900">Day 3: Follow-up reminder</p>
-                        <p className="text-sm text-gray-600">Check if they have questions</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                        <Star className="w-4 h-4 text-blue-600" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium text-gray-900">Day 7: Special offer</p>
-                        <p className="text-sm text-gray-600">Share exclusive promotion or viewing slot</p>
+
+                    <div className="mt-5 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                      <div className="flex items-start gap-2">
+                        <Activity className="w-4 h-4 text-gray-600 mt-0.5" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 mb-1">Performance Note</p>
+                          <p className="text-xs text-gray-600">Automated sequences have 3x higher response rates than manual outreach. Messages are personalized using campaign and property data.</p>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
           </div>
