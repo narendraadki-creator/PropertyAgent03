@@ -96,9 +96,9 @@ Campaign system is working if ALL of these are true:
 ## 📊 Expected Data After Seeding
 
 **Campaigns Created:** 3
-1. Luxury Waterfront Living Campaign (Active, AI Score: 85)
-2. First-Time Buyer Special (Draft, AI Score: 72)
-3. Investment Opportunity ROI Focus (Paused, AI Score: 68)
+1. Luxury Waterfront Living Campaign (Active, Type: Launch, AI Score: 85)
+2. First-Time Buyer Special (Draft, Type: Promotion, AI Score: 72)
+3. Investment Opportunity ROI Focus (Paused, Type: Price Drop, AI Score: 68)
 
 **Projects Created:** 3
 1. Marina Bay Residences
