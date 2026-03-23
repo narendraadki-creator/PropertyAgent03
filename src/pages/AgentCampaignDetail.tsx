@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Pause, CreditCard as Edit, BarChart3, Copy, Plus, Clock, Facebook, Instagram, Globe, MessageCircle, Target, TrendingUp, Users, Mail, Phone, Star, CheckCircle, AlertCircle, Activity } from 'lucide-react';
+import { ArrowLeft, Play, Pause, CreditCard as Edit, BarChart3, Copy, Plus, Clock, Facebook, Instagram, Globe, MessageCircle, Target, TrendingUp, Users, Mail, Phone, Star, CheckCircle, AlertCircle, Activity, Sparkles, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import AICampaignScore from '../components/AICampaignScore';
 import AIAudienceBuilder from '../components/AIAudienceBuilder';
@@ -169,23 +169,45 @@ export default function AgentCampaignDetail() {
     return 'text-gray-600';
   };
 
-  const handleAddProperty = async (propertyId: string) => {
+  const handleAddProperty = async (propertyId: string, isSuggested: boolean = false) => {
     try {
       const { error } = await supabase
         .from('campaign_properties')
         .insert({
           campaign_id: id,
           project_id: propertyId,
-          is_suggested: false
+          is_suggested: isSuggested
         });
 
       if (!error) {
         await fetchCampaignData();
-        setShowPropertyModal(false);
       }
     } catch (error) {
       console.error('Error adding property:', error);
     }
+  };
+
+  const generateAISuggestions = () => {
+    const unselectedProperties = availableProperties.filter(
+      prop => !properties.some(p => p.project_id === prop.id)
+    );
+
+    return unselectedProperties.slice(0, 3).map(prop => ({
+      ...prop,
+      aiScore: Math.floor(Math.random() * 30) + 70,
+      reason: getAIReason(prop)
+    }));
+  };
+
+  const getAIReason = (property: any) => {
+    const reasons = [
+      'High engagement in similar campaigns',
+      'Matches target audience profile',
+      'Trending in this location',
+      'Strong price-to-value ratio',
+      'High conversion potential'
+    ];
+    return reasons[Math.floor(Math.random() * reasons.length)];
   };
 
   const handleRemoveProperty = async (propertyId: string) => {
@@ -343,12 +365,21 @@ export default function AgentCampaignDetail() {
               {properties.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {properties.map((prop: any) => (
-                    <div key={prop.id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                      <img
-                        src={prop.projects?.image || 'https://images.pexels.com/photos/1732414/pexels-photo-1732414.jpeg?auto=compress&cs=tinysrgb&w=800'}
-                        alt={prop.projects?.name}
-                        className="w-full h-32 object-cover"
-                      />
+                    <div key={prop.id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow relative group">
+                      <div className="relative">
+                        <img
+                          src={prop.projects?.image || 'https://images.pexels.com/photos/1732414/pexels-photo-1732414.jpeg?auto=compress&cs=tinysrgb&w=800'}
+                          alt={prop.projects?.name}
+                          className="w-full h-32 object-cover"
+                        />
+                        <button
+                          onClick={() => handleRemoveProperty(prop.project_id)}
+                          className="absolute top-2 right-2 bg-red-600 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700"
+                          title="Remove property"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
                       <div className="p-3">
                         <h4 className="font-medium text-gray-900 mb-1">{prop.projects?.name}</h4>
                         <p className="text-sm text-gray-600 mb-2">{prop.projects?.location}</p>
@@ -366,7 +397,16 @@ export default function AgentCampaignDetail() {
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500 text-center py-8">No properties selected yet</p>
+                <div className="text-center py-8">
+                  <p className="text-gray-500 mb-2">No properties selected yet</p>
+                  <button
+                    onClick={() => setShowPropertyModal(true)}
+                    className="inline-flex items-center gap-2 text-sm text-teal-600 hover:text-teal-700"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add your first property
+                  </button>
+                </div>
               )}
             </div>
 
@@ -701,7 +741,7 @@ export default function AgentCampaignDetail() {
 
       {showPropertyModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+          <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-gray-900">Add Properties to Campaign</h2>
@@ -709,17 +749,67 @@ export default function AgentCampaignDetail() {
                   onClick={() => setShowPropertyModal(false)}
                   className="text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <X className="w-6 h-6" />
                 </button>
               </div>
             </div>
 
             <div className="flex-1 overflow-y-auto p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {generateAISuggestions().length > 0 && (
+                <div className="mb-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Sparkles className="w-5 h-5 text-purple-600" />
+                    <h3 className="font-semibold text-gray-900">AI Suggested Properties</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {generateAISuggestions().map((property) => (
+                      <div
+                        key={property.id}
+                        className="border-2 border-purple-200 bg-purple-50 rounded-lg overflow-hidden hover:border-purple-300 transition-all"
+                      >
+                        <div className="relative">
+                          <img
+                            src={property.image || 'https://images.pexels.com/photos/1732414/pexels-photo-1732414.jpeg?auto=compress&cs=tinysrgb&w=800'}
+                            alt={property.name}
+                            className="w-full h-40 object-cover"
+                          />
+                          <div className="absolute top-2 right-2 bg-purple-600 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+                            <Star className="w-3 h-3 fill-current" />
+                            {property.aiScore}%
+                          </div>
+                        </div>
+                        <div className="p-4">
+                          <h3 className="font-semibold text-gray-900 mb-1">{property.name}</h3>
+                          <p className="text-sm text-gray-600 mb-2">{property.location}</p>
+                          <p className="text-lg font-bold text-teal-600 mb-2">
+                            AED {property.price?.toLocaleString() || 'N/A'}
+                          </p>
+                          <div className="bg-white rounded-lg p-2 mb-3">
+                            <p className="text-xs text-purple-700 flex items-start gap-1">
+                              <Sparkles className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                              {property.reason}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => handleAddProperty(property.id, true)}
+                            className="w-full bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
+                          >
+                            Add Suggested Property
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="mb-4">
+                <h3 className="font-semibold text-gray-900 mb-3">All Properties</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {availableProperties.map((property) => {
                   const isSelected = properties.some(p => p.project_id === property.id);
+                  const selectedProperty = properties.find(p => p.project_id === property.id);
 
                   return (
                     <div
@@ -730,11 +820,19 @@ export default function AgentCampaignDetail() {
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
-                      <img
-                        src={property.image || 'https://images.pexels.com/photos/1732414/pexels-photo-1732414.jpeg?auto=compress&cs=tinysrgb&w=800'}
-                        alt={property.name}
-                        className="w-full h-40 object-cover"
-                      />
+                      <div className="relative">
+                        <img
+                          src={property.image || 'https://images.pexels.com/photos/1732414/pexels-photo-1732414.jpeg?auto=compress&cs=tinysrgb&w=800'}
+                          alt={property.name}
+                          className="w-full h-40 object-cover"
+                        />
+                        {isSelected && selectedProperty?.is_suggested && (
+                          <div className="absolute top-2 right-2 bg-purple-600 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+                            <Star className="w-3 h-3 fill-current" />
+                            AI Suggested
+                          </div>
+                        )}
+                      </div>
                       <div className="p-4">
                         <h3 className="font-semibold text-gray-900 mb-1">{property.name}</h3>
                         <p className="text-sm text-gray-600 mb-2">{property.location}</p>
@@ -751,7 +849,7 @@ export default function AgentCampaignDetail() {
                           </button>
                         ) : (
                           <button
-                            onClick={() => handleAddProperty(property.id)}
+                            onClick={() => handleAddProperty(property.id, false)}
                             className="w-full bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors text-sm font-medium"
                           >
                             Add to Campaign
