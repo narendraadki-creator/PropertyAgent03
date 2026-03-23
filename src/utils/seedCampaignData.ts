@@ -2,6 +2,12 @@ import { supabase } from '../lib/supabase';
 
 export async function seedCampaignData() {
   try {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      throw new Error('You must be logged in to seed campaign data');
+    }
+
     let { data: projects } = await supabase
       .from('projects')
       .select('id')
@@ -67,6 +73,7 @@ export async function seedCampaignData() {
     const sampleCampaigns = [
       {
         project_id: projects[0].id,
+        agent_id: user.id,
         title: 'Luxury Waterfront Living Campaign',
         description: 'Premium campaign targeting high-net-worth individuals interested in waterfront properties',
         campaign_type: 'launch',
@@ -101,6 +108,7 @@ export async function seedCampaignData() {
       },
       {
         project_id: projects[1]?.id || projects[0].id,
+        agent_id: user.id,
         title: 'First-Time Buyer Special',
         description: 'Affordable housing campaign with flexible payment plans',
         campaign_type: 'promotion',
@@ -128,6 +136,7 @@ export async function seedCampaignData() {
       },
       {
         project_id: projects[2]?.id || projects[0].id,
+        agent_id: user.id,
         title: 'Investment Opportunity ROI Focus',
         description: 'High-return investment properties for smart investors',
         campaign_type: 'price_drop',

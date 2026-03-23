@@ -20,13 +20,25 @@ export default function AgentCampaigns() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
 
+      if (!user) {
+        console.log('No user found, showing empty campaigns');
+        setCampaigns([]);
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('campaigns')
         .select('*')
-        .eq('agent_id', user?.id)
+        .eq('agent_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+
+      console.log('Fetched campaigns:', data?.length || 0);
 
       if (data) {
         const formattedCampaigns: Campaign[] = data.map((campaign: any) => ({
@@ -47,9 +59,12 @@ export default function AgentCampaigns() {
           updatedAt: campaign.updated_at
         }));
         setCampaigns(formattedCampaigns);
+      } else {
+        setCampaigns([]);
       }
     } catch (error) {
       console.error('Error fetching campaigns:', error);
+      setCampaigns([]);
     } finally {
       setLoading(false);
     }
