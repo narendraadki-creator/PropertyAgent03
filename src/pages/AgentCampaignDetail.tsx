@@ -429,7 +429,27 @@ export default function AgentCampaignDetail() {
             <AIContentGenerator
               propertyName={properties[0]?.projects?.name}
               propertyType={campaign.campaign_type}
-              onGenerate={(content) => console.log(content)}
+              initialTitle={campaign.title}
+              initialDescription={campaign.description}
+              initialCta={campaign.cta}
+              onGenerate={(content) => {
+                supabase
+                  .from('campaigns')
+                  .update({
+                    title: content.title,
+                    description: content.description,
+                    cta: content.cta
+                  })
+                  .eq('id', id)
+                  .then(() => {
+                    setCampaign({
+                      ...campaign,
+                      title: content.title,
+                      description: content.description,
+                      cta: content.cta
+                    });
+                  });
+              }}
             />
           </div>
 
