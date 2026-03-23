@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Pause, CreditCard as Edit, BarChart3, Copy, Plus, Clock, Facebook, Instagram, Globe, MessageCircle, Target, TrendingUp, Users, Mail, Phone, Star, CheckCircle, AlertCircle, Activity, Sparkles, X, ArrowUpDown, AlertTriangle, Flame, ThermometerSun, Snowflake, Filter, Award, List, Map } from 'lucide-react';
+import { ArrowLeft, Play, Pause, CreditCard as Edit, BarChart3, Copy, Plus, Clock, Facebook, Instagram, Globe, MessageCircle, Target, TrendingUp, Users, Mail, Phone, Star, CheckCircle, AlertCircle, Activity, Sparkles, X, ArrowUpDown, AlertTriangle, Flame, ThermometerSun, Snowflake, Filter, Award, List, Map, MapPin } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import AICampaignScore from '../components/AICampaignScore';
 import AIAudienceBuilder from '../components/AIAudienceBuilder';
@@ -1075,21 +1075,57 @@ export default function AgentCampaignDetail() {
                 )}
 
                 {leadsViewMode === 'map' ? (
-                  <GeoHeatmap
-                    leads={(showHotLeadsOnly ? leads.filter(l => l.priority_score >= 80) : leads).map(lead => ({
-                      id: lead.id,
-                      name: lead.name,
-                      latitude: lead.latitude || 0,
-                      longitude: lead.longitude || 0,
-                      city: lead.city,
-                      state: lead.state,
-                      budget: lead.budget,
-                      stage: lead.status
-                    }))}
-                    onLeadClick={(leadId) => {
-                      console.log('Lead clicked:', leadId);
-                    }}
-                  />
+                  <div className="bg-white rounded-lg border border-gray-200 p-6">
+                    {(() => {
+                      const filteredLeads = showHotLeadsOnly ? leads.filter(l => l.priority_score >= 80) : leads;
+                      const leadsWithLocation = filteredLeads.filter(l => l.latitude && l.longitude);
+
+                      console.log('Campaign Leads Debug:', {
+                        totalLeads: leads.length,
+                        filteredLeads: filteredLeads.length,
+                        leadsWithLocation: leadsWithLocation.length,
+                        sampleLead: filteredLeads[0]
+                      });
+
+                      if (leadsWithLocation.length === 0) {
+                        return (
+                          <div className="text-center py-16">
+                            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                              <MapPin className="w-8 h-8 text-gray-400" />
+                            </div>
+                            <h3 className="font-semibold text-gray-900 mb-2">No Geographic Data Available</h3>
+                            <p className="text-gray-600 mb-4">
+                              Campaign leads don't have location data yet.
+                            </p>
+                            <button
+                              onClick={() => window.location.href = '/test/geo-heatmap'}
+                              className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 transition-colors"
+                            >
+                              Seed Location Data
+                            </button>
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <GeoHeatmap
+                          leads={leadsWithLocation.map(lead => ({
+                            id: lead.id,
+                            name: lead.name,
+                            latitude: lead.latitude,
+                            longitude: lead.longitude,
+                            city: lead.city,
+                            state: lead.state,
+                            budget: lead.budget,
+                            stage: lead.status
+                          }))}
+                          onLeadClick={(leadId) => {
+                            console.log('Lead clicked:', leadId);
+                          }}
+                        />
+                      );
+                    })()}
+                  </div>
                 ) : leads.length > 0 ? (
                   <div className="overflow-x-auto bg-white border border-gray-200 rounded-lg">
                     <table className="w-full">
