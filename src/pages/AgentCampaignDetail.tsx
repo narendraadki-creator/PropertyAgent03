@@ -534,7 +534,10 @@ export default function AgentCampaignDetail() {
                 Resume
               </button>
             )}
-            <button className="flex items-center gap-2 bg-white/10 text-white px-4 py-2 rounded-md hover:bg-white/20 transition-colors">
+            <button
+              onClick={() => setActiveTab('analytics')}
+              className="flex items-center gap-2 bg-white/10 text-white px-4 py-2 rounded-md hover:bg-white/20 transition-colors"
+            >
               <BarChart3 className="w-4 h-4" />
               View Analytics
             </button>
