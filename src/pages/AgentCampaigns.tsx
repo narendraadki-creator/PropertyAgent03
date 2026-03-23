@@ -26,19 +26,9 @@ export default function AgentCampaigns() {
 
   const fetchCampaigns = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-
-      if (!user) {
-        console.log('No user found, showing empty campaigns');
-        setCampaigns([]);
-        setLoading(false);
-        return;
-      }
-
       const { data, error } = await supabase
         .from('campaigns')
         .select('*')
-        .eq('agent_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -101,34 +91,12 @@ export default function AgentCampaigns() {
   const handleSeedData = async () => {
     setLoading(true);
     try {
-      console.log('Seeding with user:', currentUser ? currentUser.id : 'No current user');
-
-      if (!currentUser) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          const shouldLogin = confirm('You need to log in first to add sample data. Go to login page?');
-          if (shouldLogin) {
-            navigate('/login');
-          }
-          setLoading(false);
-          return;
-        }
-        setCurrentUser(user);
-      }
-
       await seedCampaignData();
       await fetchCampaigns();
       alert('Sample campaign data added successfully! Click on any campaign to view details.');
     } catch (error: any) {
       console.error('Error seeding data:', error);
-      if (error.message?.includes('Authentication required')) {
-        const shouldLogin = confirm('Authentication error. Go to login page?');
-        if (shouldLogin) {
-          navigate('/login');
-        }
-      } else {
-        alert(`Failed to seed campaign data: ${error.message || 'Unknown error'}`);
-      }
+      alert(`Failed to seed campaign data: ${error.message || 'Unknown error'}`);
     } finally {
       setLoading(false);
     }

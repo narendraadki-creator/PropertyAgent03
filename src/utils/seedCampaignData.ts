@@ -2,27 +2,10 @@ import { supabase } from '../lib/supabase';
 
 export async function seedCampaignData() {
   try {
-    console.log('=== SEED DATA: AUTH CHECK START ===');
+    console.log('=== SEED DATA START ===');
 
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-    console.log('Session:', session ? 'EXISTS' : 'NULL', sessionError ? 'Error: ' + sessionError.message : '');
-
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    console.log('User:', user ? user.id : 'NULL', userError ? 'Error: ' + userError.message : '');
-
-    if (session) {
-      console.log('Access token exists:', session.access_token ? 'YES' : 'NO');
-      console.log('Token expires at:', new Date(session.expires_at! * 1000).toLocaleString());
-    }
-
-    if (!user || !session) {
-      console.error('=== AUTH FAILED ===');
-      console.log('LocalStorage keys:', Object.keys(localStorage).filter(k => k.includes('supabase')));
-      throw new Error('Authentication required. Please refresh the page and try again.');
-    }
-
-    const agentId = user.id;
-    console.log('=== AUTH SUCCESS - Agent ID:', agentId, '===');
+    const agentId = '00000000-0000-0000-0000-000000000000';
+    console.log('Using demo agent ID:', agentId);
 
     let { data: projects } = await supabase
       .from('projects')
