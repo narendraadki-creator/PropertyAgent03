@@ -16,6 +16,7 @@ interface AIAudienceBuilderProps {
 
 const AIAudienceBuilder: React.FC<AIAudienceBuilderProps> = ({ config, onChange, propertyType }) => {
   const [showAISuggestions, setShowAISuggestions] = useState(false);
+  const [aiGenerated, setAiGenerated] = useState(false);
 
   const safeConfig: AudienceConfig = {
     locations: config?.locations || [],
@@ -25,6 +26,8 @@ const AIAudienceBuilder: React.FC<AIAudienceBuilderProps> = ({ config, onChange,
   };
 
   const handleGenerateAudience = () => {
+    console.log('Generating AI audience for property type:', propertyType);
+
     const suggestions: AudienceConfig = {
       locations: propertyType === 'luxury'
         ? ['Dubai Marina', 'Palm Jumeirah', 'Downtown Dubai']
@@ -36,8 +39,12 @@ const AIAudienceBuilder: React.FC<AIAudienceBuilderProps> = ({ config, onChange,
         : ['First-time Buyer', 'End-user']
     };
 
+    console.log('AI generated suggestions:', suggestions);
     onChange(suggestions);
     setShowAISuggestions(true);
+    setAiGenerated(true);
+
+    setTimeout(() => setShowAISuggestions(false), 5000);
   };
 
   const locations = ['Dubai Marina', 'Downtown Dubai', 'JVC', 'Arabian Ranches', 'Dubai Hills', 'Palm Jumeirah'];
@@ -46,13 +53,21 @@ const AIAudienceBuilder: React.FC<AIAudienceBuilderProps> = ({ config, onChange,
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-4">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-gray-900">Target Audience</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="font-semibold text-gray-900">Target Audience</h3>
+          {aiGenerated && (
+            <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded-full flex items-center gap-1">
+              <Sparkles className="w-3 h-3" />
+              AI Generated
+            </span>
+          )}
+        </div>
         <button
           onClick={handleGenerateAudience}
-          className="flex items-center gap-2 text-sm bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all"
+          className="flex items-center gap-2 text-sm bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all shadow-md hover:shadow-lg"
         >
           <Sparkles className="w-4 h-4" />
-          AI Audience Builder
+          Generate with AI
         </button>
       </div>
 
@@ -142,11 +157,20 @@ const AIAudienceBuilder: React.FC<AIAudienceBuilderProps> = ({ config, onChange,
       </div>
 
       {showAISuggestions && (
-        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-sm text-blue-800">
-            <Sparkles className="w-4 h-4 inline mr-1" />
-            AI has optimized your audience based on {propertyType || 'property'} type
-          </p>
+        <div className="mt-4 p-4 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg">
+          <div className="flex items-start gap-2">
+            <Sparkles className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-purple-900 mb-1">
+                AI Audience Generated Successfully!
+              </p>
+              <p className="text-xs text-purple-700">
+                Optimized for {propertyType || 'property'} type properties with {safeConfig.locations.length} locations,
+                budget range AED {safeConfig.budgetMin.toLocaleString()} - {safeConfig.budgetMax.toLocaleString()},
+                targeting {safeConfig.buyerTypes.join(', ')}
+              </p>
+            </div>
+          </div>
         </div>
       )}
     </div>

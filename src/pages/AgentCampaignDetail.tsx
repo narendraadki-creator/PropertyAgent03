@@ -417,8 +417,13 @@ export default function AgentCampaignDetail() {
               config={campaign.audience_config || { locations: [], budgetMin: 0, budgetMax: 0, buyerTypes: [] }}
               onChange={(config) => {
                 supabase.from('campaigns').update({ audience_config: config }).eq('id', id);
+                setCampaign({ ...campaign, audience_config: config });
               }}
-              propertyType="luxury"
+              propertyType={
+                properties.length > 0 && properties[0].projects?.type
+                  ? properties[0].projects.type
+                  : campaign.type || 'luxury'
+              }
             />
 
             <AIContentGenerator
