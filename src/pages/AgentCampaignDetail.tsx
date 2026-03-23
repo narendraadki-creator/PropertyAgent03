@@ -776,51 +776,194 @@ export default function AgentCampaignDetail() {
 
             {activeTab === 'analytics' && (
               <div>
-                <h3 className="font-semibold text-gray-900 mb-4">Performance Analytics</h3>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                  <div className="flex items-start gap-2">
-                    <TrendingUp className="w-5 h-5 text-blue-600 mt-0.5" />
-                    <div>
-                      <p className="font-medium text-blue-900 mb-1">What's Working</p>
-                      <p className="text-sm text-blue-800">
-                        Instagram is generating 60% more leads than Facebook. Consider increasing Instagram budget allocation.
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                <h3 className="font-semibold text-gray-900 text-lg mb-6">Performance Analytics</h3>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="p-4 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">Avg. Daily Views</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {analytics ? Math.round(analytics.totals.views / analytics.daily.length) : 0}
-                    </p>
-                  </div>
-                  <div className="p-4 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">Click Rate</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {analytics?.totals.views > 0
-                        ? ((analytics.totals.clicks / analytics.totals.views) * 100).toFixed(1)
-                        : 0}%
-                    </p>
-                  </div>
-                  <div className="p-4 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">Lead Rate</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {analytics?.totals.clicks > 0
-                        ? ((analytics.totals.leads / analytics.totals.clicks) * 100).toFixed(1)
-                        : 0}%
-                    </p>
-                  </div>
-                  <div className="p-4 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">Cost/Lead</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      AED {analytics?.totals.leads > 0
-                        ? Math.round((campaign.budget || 0) / analytics.totals.leads)
-                        : 0}
-                    </p>
-                  </div>
-                </div>
+                {(() => {
+                  const channelBreakdown = analytics?.daily?.[0]?.channel_breakdown || {};
+                  const channels = Object.entries(channelBreakdown).map(([name, value]) => ({
+                    name: name.charAt(0).toUpperCase() + name.slice(1),
+                    leads: value as number
+                  })).sort((a, b) => b.leads - a.leads);
+
+                  const topChannel = channels[0];
+                  const secondChannel = channels[1];
+                  const avgDailyViews = analytics ? Math.round(analytics.totals.views / analytics.daily.length) : 0;
+                  const clickRate = analytics?.totals.views > 0 ? ((analytics.totals.clicks / analytics.totals.views) * 100) : 0;
+                  const leadRate = analytics?.totals.clicks > 0 ? ((analytics.totals.leads / analytics.totals.clicks) * 100) : 0;
+                  const costPerLead = analytics?.totals.leads > 0 ? Math.round((campaign.budget || 0) / analytics.totals.leads) : 0;
+
+                  let insightMessage = '';
+                  let insightType: 'success' | 'warning' | 'info' = 'info';
+
+                  if (topChannel && secondChannel && topChannel.leads > 0) {
+                    const improvement = ((topChannel.leads - secondChannel.leads) / secondChannel.leads * 100);
+                    if (improvement > 50) {
+                      insightMessage = `${topChannel.name} is generating ${Math.round(improvement)}% more leads than ${secondChannel.name}. Consider reallocating more budget to ${topChannel.name} for better ROI.`;
+                      insightType = 'success';
+                    } else if (improvement > 0) {
+                      insightMessage = `${topChannel.name} is your top-performing channel. However, ${secondChannel.name} is performing competitively. Maintain balanced budget allocation.`;
+                      insightType = 'info';
+                    }
+                  } else if (clickRate > 0 && clickRate < 3) {
+                    insightMessage = `Your click rate is ${clickRate.toFixed(1)}%, which is below the industry average of 3-5%. Consider improving your ad creative and targeting.`;
+                    insightType = 'warning';
+                  } else if (clickRate >= 3 && leadRate < 5) {
+                    insightMessage = `Good click rate at ${clickRate.toFixed(1)}%, but lead conversion at ${leadRate.toFixed(1)}% could be improved. Review your landing page and lead capture forms.`;
+                    insightType = 'warning';
+                  } else if (clickRate >= 3 && leadRate >= 5) {
+                    insightMessage = `Excellent performance! Your ${clickRate.toFixed(1)}% click rate and ${leadRate.toFixed(1)}% lead rate are above industry benchmarks. Keep up the great work!`;
+                    insightType = 'success';
+                  } else if (costPerLead > 0 && costPerLead < 500) {
+                    insightMessage = `Outstanding cost efficiency at AED ${costPerLead} per lead! This is well below market average. Your campaign targeting is highly effective.`;
+                    insightType = 'success';
+                  } else {
+                    insightMessage = `Campaign is collecting data. Check back after 48 hours for personalized insights based on your performance metrics.`;
+                    insightType = 'info';
+                  }
+
+                  return (
+                    <>
+                      <div className={`border rounded-lg p-5 mb-6 ${
+                        insightType === 'success' ? 'bg-green-50 border-green-200' :
+                        insightType === 'warning' ? 'bg-amber-50 border-amber-200' :
+                        'bg-blue-50 border-blue-200'
+                      }`}>
+                        <div className="flex items-start gap-3">
+                          <div className={`p-2 rounded-lg ${
+                            insightType === 'success' ? 'bg-green-100' :
+                            insightType === 'warning' ? 'bg-amber-100' :
+                            'bg-blue-100'
+                          }`}>
+                            <Sparkles className={`w-5 h-5 ${
+                              insightType === 'success' ? 'text-green-600' :
+                              insightType === 'warning' ? 'text-amber-600' :
+                              'text-blue-600'
+                            }`} />
+                          </div>
+                          <div className="flex-1">
+                            <p className={`font-semibold mb-1.5 ${
+                              insightType === 'success' ? 'text-green-900' :
+                              insightType === 'warning' ? 'text-amber-900' :
+                              'text-blue-900'
+                            }`}>
+                              AI Insight: What's Working
+                            </p>
+                            <p className={`text-sm leading-relaxed ${
+                              insightType === 'success' ? 'text-green-800' :
+                              insightType === 'warning' ? 'text-amber-800' :
+                              'text-blue-800'
+                            }`}>
+                              {insightMessage}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                        <div className="p-5 bg-gradient-to-br from-teal-50 to-white border border-teal-100 rounded-xl">
+                          <div className="flex items-center gap-2 mb-2">
+                            <BarChart3 className="w-4 h-4 text-teal-600" />
+                            <p className="text-sm font-medium text-gray-600">Avg. Daily Views</p>
+                          </div>
+                          <p className="text-3xl font-bold text-gray-900 mb-1">
+                            {avgDailyViews.toLocaleString()}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {analytics?.totals.views.toLocaleString()} total views
+                          </p>
+                        </div>
+
+                        <div className="p-5 bg-gradient-to-br from-blue-50 to-white border border-blue-100 rounded-xl">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Target className="w-4 h-4 text-blue-600" />
+                            <p className="text-sm font-medium text-gray-600">Click Rate (%)</p>
+                          </div>
+                          <p className="text-3xl font-bold text-gray-900 mb-1">
+                            {clickRate.toFixed(1)}%
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {analytics?.totals.clicks.toLocaleString()} clicks
+                          </p>
+                        </div>
+
+                        <div className="p-5 bg-gradient-to-br from-green-50 to-white border border-green-100 rounded-xl">
+                          <div className="flex items-center gap-2 mb-2">
+                            <TrendingUp className="w-4 h-4 text-green-600" />
+                            <p className="text-sm font-medium text-gray-600">Lead Rate (%)</p>
+                          </div>
+                          <p className="text-3xl font-bold text-gray-900 mb-1">
+                            {leadRate.toFixed(1)}%
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {analytics?.totals.leads} leads generated
+                          </p>
+                        </div>
+
+                        <div className="p-5 bg-gradient-to-br from-purple-50 to-white border border-purple-100 rounded-xl">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Activity className="w-4 h-4 text-purple-600" />
+                            <p className="text-sm font-medium text-gray-600">Cost per Lead (AED)</p>
+                          </div>
+                          <p className="text-3xl font-bold text-gray-900 mb-1">
+                            {costPerLead.toLocaleString()}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            AED {(campaign.budget || 0).toLocaleString()} budget
+                          </p>
+                        </div>
+                      </div>
+
+                      {channels.length > 0 && (
+                        <div className="bg-white border border-gray-200 rounded-lg p-5">
+                          <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                            <BarChart3 className="w-5 h-5 text-gray-600" />
+                            Channel Performance Breakdown
+                          </h4>
+                          <div className="space-y-3">
+                            {channels.map((channel, index) => {
+                              const totalLeads = channels.reduce((sum, c) => sum + c.leads, 0);
+                              const percentage = totalLeads > 0 ? (channel.leads / totalLeads * 100) : 0;
+
+                              return (
+                                <div key={channel.name} className="space-y-2">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      {channel.name === 'Instagram' && <Instagram className="w-4 h-4 text-pink-600" />}
+                                      {channel.name === 'Facebook' && <Facebook className="w-4 h-4 text-blue-600" />}
+                                      {channel.name === 'Google' && <Globe className="w-4 h-4 text-red-600" />}
+                                      {channel.name === 'Whatsapp' && <MessageCircle className="w-4 h-4 text-green-600" />}
+                                      <span className="font-medium text-gray-900">{channel.name}</span>
+                                      {index === 0 && (
+                                        <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
+                                          Top Performer
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="text-right">
+                                      <span className="font-semibold text-gray-900">{channel.leads} leads</span>
+                                      <span className="text-sm text-gray-500 ml-2">({percentage.toFixed(0)}%)</span>
+                                    </div>
+                                  </div>
+                                  <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                                    <div
+                                      className={`h-2.5 rounded-full transition-all duration-500 ${
+                                        channel.name === 'Instagram' ? 'bg-gradient-to-r from-pink-500 to-purple-600' :
+                                        channel.name === 'Facebook' ? 'bg-blue-600' :
+                                        channel.name === 'Google' ? 'bg-red-600' :
+                                        'bg-green-600'
+                                      }`}
+                                      style={{ width: `${percentage}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             )}
 
