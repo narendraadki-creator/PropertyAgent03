@@ -17,6 +17,13 @@ interface AIAudienceBuilderProps {
 const AIAudienceBuilder: React.FC<AIAudienceBuilderProps> = ({ config, onChange, propertyType }) => {
   const [showAISuggestions, setShowAISuggestions] = useState(false);
 
+  const safeConfig: AudienceConfig = {
+    locations: config?.locations || [],
+    budgetMin: config?.budgetMin || 0,
+    budgetMax: config?.budgetMax || 0,
+    buyerTypes: config?.buyerTypes || []
+  };
+
   const handleGenerateAudience = () => {
     const suggestions: AudienceConfig = {
       locations: propertyType === 'luxury'
@@ -60,13 +67,13 @@ const AIAudienceBuilder: React.FC<AIAudienceBuilderProps> = ({ config, onChange,
               <button
                 key={location}
                 onClick={() => {
-                  const newLocations = config.locations.includes(location)
-                    ? config.locations.filter(l => l !== location)
-                    : [...config.locations, location];
-                  onChange({ ...config, locations: newLocations });
+                  const newLocations = safeConfig.locations.includes(location)
+                    ? safeConfig.locations.filter(l => l !== location)
+                    : [...safeConfig.locations, location];
+                  onChange({ ...safeConfig, locations: newLocations });
                 }}
                 className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
-                  config.locations.includes(location)
+                  safeConfig.locations.includes(location)
                     ? 'bg-teal-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
@@ -87,8 +94,8 @@ const AIAudienceBuilder: React.FC<AIAudienceBuilderProps> = ({ config, onChange,
               <label className="text-xs text-gray-600 mb-1 block">Min (AED)</label>
               <input
                 type="number"
-                value={config.budgetMin}
-                onChange={(e) => onChange({ ...config, budgetMin: Number(e.target.value) })}
+                value={safeConfig.budgetMin}
+                onChange={(e) => onChange({ ...safeConfig, budgetMin: Number(e.target.value) })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                 placeholder="500,000"
               />
@@ -97,8 +104,8 @@ const AIAudienceBuilder: React.FC<AIAudienceBuilderProps> = ({ config, onChange,
               <label className="text-xs text-gray-600 mb-1 block">Max (AED)</label>
               <input
                 type="number"
-                value={config.budgetMax}
-                onChange={(e) => onChange({ ...config, budgetMax: Number(e.target.value) })}
+                value={safeConfig.budgetMax}
+                onChange={(e) => onChange({ ...safeConfig, budgetMax: Number(e.target.value) })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                 placeholder="2,000,000"
               />
@@ -116,13 +123,13 @@ const AIAudienceBuilder: React.FC<AIAudienceBuilderProps> = ({ config, onChange,
               <button
                 key={type}
                 onClick={() => {
-                  const newTypes = config.buyerTypes.includes(type)
-                    ? config.buyerTypes.filter(t => t !== type)
-                    : [...config.buyerTypes, type];
-                  onChange({ ...config, buyerTypes: newTypes });
+                  const newTypes = safeConfig.buyerTypes.includes(type)
+                    ? safeConfig.buyerTypes.filter(t => t !== type)
+                    : [...safeConfig.buyerTypes, type];
+                  onChange({ ...safeConfig, buyerTypes: newTypes });
                 }}
                 className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
-                  config.buyerTypes.includes(type)
+                  safeConfig.buyerTypes.includes(type)
                     ? 'bg-teal-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
