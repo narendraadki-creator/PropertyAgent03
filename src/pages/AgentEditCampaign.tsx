@@ -131,7 +131,8 @@ export default function AgentEditCampaign() {
           content_template: {
             content: generatedContent,
             hashtags: hashtags
-          }
+          },
+          updated_at: new Date().toISOString()
         })
         .eq('id', id);
 
@@ -140,7 +141,13 @@ export default function AgentEditCampaign() {
         throw error;
       }
 
-      alert('Campaign updated successfully!');
+      await supabase.from('campaign_activities').insert({
+        campaign_id: id,
+        activity_type: 'campaign_updated',
+        description: 'Campaign details updated',
+        metadata: { updated_fields: ['title', 'description', 'budget', 'dates'] }
+      });
+
       navigate(`/agent/campaigns/${id}`);
     } catch (error: any) {
       console.error('Error updating campaign:', error);

@@ -143,12 +143,8 @@ export default function AgentCampaignDetail() {
   };
 
   const handleDuplicate = async () => {
-    console.log('Duplicate button clicked');
-    console.log('Current campaign:', campaign);
-
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      console.log('Current user:', user?.id);
 
       const newCampaign = {
         project_id: campaign.project_id,
@@ -167,10 +163,13 @@ export default function AgentCampaignDetail() {
           shares: 0,
           clicks: 0,
           views: 0
-        }
+        },
+        channel_budget_split: campaign.channel_budget_split || {},
+        audience_config: campaign.audience_config || {},
+        automation_settings: campaign.automation_settings || {},
+        ai_score: campaign.ai_score || null,
+        cta: campaign.cta || null
       };
-
-      console.log('Creating new campaign:', newCampaign);
 
       const { data, error } = await supabase
         .from('campaigns')
@@ -179,15 +178,27 @@ export default function AgentCampaignDetail() {
         .single();
 
       if (error) {
-        console.error('Duplicate error:', error);
         alert('Failed to duplicate campaign: ' + error.message);
         return;
       }
 
-      console.log('Campaign duplicated successfully:', data);
-
       if (data) {
-        alert('Campaign duplicated successfully!');
+        if (properties.length > 0) {
+          const propertyInserts = properties.map(prop => ({
+            campaign_id: data.id,
+            project_id: prop.project_id,
+            is_suggested: prop.is_suggested || false
+          }));
+          await supabase.from('campaign_properties').insert(propertyInserts);
+        }
+
+        await supabase.from('campaign_activities').insert({
+          campaign_id: data.id,
+          activity_type: 'campaign_launched',
+          description: `Campaign duplicated from "${campaign.title}"`,
+          metadata: { original_campaign_id: campaign.id }
+        });
+
         navigate(`/agent/campaigns/${data.id}`);
       }
     } catch (error: any) {
@@ -354,12 +365,39 @@ export default function AgentCampaignDetail() {
                 </span>
               </div>
               <p className="text-teal-100">{campaign.description}</p>
-              <div className="flex items-center gap-4 mt-3 text-sm text-teal-100">
+              <div className="flex items-center gap-6 mt-3 text-sm text-teal-100">
                 <div className="flex items-center gap-1">
                   <Clock className="w-4 h-4" />
                   {campaign.start_date ? new Date(campaign.start_date).toLocaleDateString() : 'Not set'} -
                   {campaign.end_date ? new Date(campaign.end_date).toLocaleDateString() : 'Ongoing'}
                 </div>
+                {campaign.channel_budget_split && Object.keys(campaign.channel_budget_split).length > 0 && (
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs opacity-75">Active Channels:</span>
+                    <div className="flex items-center gap-2">
+                      {Object.entries(campaign.channel_budget_split).map(([channel, budget]: [string, any]) => {
+                        if (budget > 0) {
+                          const channelIcons: { [key: string]: { icon: any, label: string } } = {
+                            facebook: { icon: Facebook, label: 'Facebook' },
+                            instagram: { icon: Instagram, label: 'Instagram' },
+                            google: { icon: Globe, label: 'Google Ads' },
+                            whatsapp: { icon: MessageCircle, label: 'WhatsApp' }
+                          };
+                          const channelData = channelIcons[channel.toLowerCase()];
+                          if (!channelData) return null;
+                          const IconComponent = channelData.icon;
+                          return (
+                            <div key={channel} className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm px-2.5 py-1.5 rounded-lg" title={`${channelData.label}: AED ${budget.toLocaleString()}`}>
+                              <IconComponent className="w-4 h-4" />
+                              <span className="text-xs font-medium">AED {(budget / 1000).toFixed(1)}k</span>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -612,6 +650,8 @@ export default function AgentCampaignDetail() {
                         return { icon: Mail, bg: 'bg-blue-100', color: 'text-blue-600' };
                       case 'campaign_launched':
                         return { icon: Play, bg: 'bg-purple-100', color: 'text-purple-600' };
+                      case 'campaign_updated':
+                        return { icon: Edit, bg: 'bg-blue-100', color: 'text-blue-600' };
                       case 'automation_change':
                         return { icon: Sparkles, bg: 'bg-amber-100', color: 'text-amber-600' };
                       case 'property_added':
