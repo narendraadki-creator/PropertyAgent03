@@ -24,15 +24,28 @@ export default function AgentCampaignDetail() {
 
   const fetchCampaignData = async () => {
     try {
+      console.log('Fetching campaign with ID:', id);
+
       const [campaignRes, propertiesRes, leadsRes, analyticsRes, activitiesRes] = await Promise.all([
-        supabase.from('campaigns').select('*').eq('id', id).single(),
+        supabase.from('campaigns').select('*').eq('id', id).maybeSingle(),
         supabase.from('campaign_properties').select('*, projects(*)').eq('campaign_id', id),
         supabase.from('campaign_leads').select('*').eq('campaign_id', id).order('created_at', { ascending: false }),
         supabase.from('campaign_analytics').select('*').eq('campaign_id', id).order('date', { ascending: false }).limit(30),
         supabase.from('campaign_activities').select('*').eq('campaign_id', id).order('created_at', { ascending: false }).limit(10)
       ]);
 
-      if (campaignRes.data) setCampaign(campaignRes.data);
+      console.log('Campaign response:', campaignRes);
+
+      if (campaignRes.error) {
+        console.error('Error fetching campaign:', campaignRes.error);
+      }
+
+      if (campaignRes.data) {
+        setCampaign(campaignRes.data);
+      } else {
+        console.log('No campaign found with ID:', id);
+      }
+
       if (propertiesRes.data) setProperties(propertiesRes.data);
       if (leadsRes.data) setLeads(leadsRes.data);
       if (analyticsRes.data && analyticsRes.data.length > 0) {
