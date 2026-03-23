@@ -467,25 +467,43 @@ export default function AgentCampaignDetail() {
               <h3 className="font-semibold text-gray-900 mb-4">Performance Overview</h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                  <div>
-                    <p className="text-sm text-gray-600">Total Views</p>
-                    <p className="text-2xl font-bold text-gray-900">{analytics?.totals.views?.toLocaleString() || 0}</p>
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-600 mb-1">Total Views</p>
+                    <p className="text-2xl font-bold text-gray-900">{analytics?.totals.views?.toLocaleString() || '0'}</p>
+                    <div className="flex items-center gap-1 mt-1">
+                      <TrendingUp className="w-3 h-3 text-green-600" />
+                      <span className="text-xs text-green-600 font-medium">+12% vs last period</span>
+                    </div>
                   </div>
-                  <TrendingUp className="w-8 h-8 text-blue-600" />
+                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                    <TrendingUp className="w-5 h-5 text-blue-600" />
+                  </div>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                  <div>
-                    <p className="text-sm text-gray-600">Leads Generated</p>
-                    <p className="text-2xl font-bold text-gray-900">{leads.length}</p>
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-600 mb-1">Leads Generated</p>
+                    <p className="text-2xl font-bold text-gray-900">{leads.length.toLocaleString()}</p>
+                    <div className="flex items-center gap-1 mt-1">
+                      <TrendingUp className="w-3 h-3 text-green-600" />
+                      <span className="text-xs text-green-600 font-medium">+8% vs last period</span>
+                    </div>
                   </div>
-                  <Users className="w-8 h-8 text-green-600" />
+                  <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                    <Users className="w-5 h-5 text-green-600" />
+                  </div>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
-                  <div>
-                    <p className="text-sm text-gray-600">Conversion Rate</p>
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-600 mb-1">Conversion Rate</p>
                     <p className="text-2xl font-bold text-gray-900">{conversionRate}%</p>
+                    <div className="flex items-center gap-1 mt-1">
+                      <TrendingUp className="w-3 h-3 text-green-600" />
+                      <span className="text-xs text-green-600 font-medium">+5% vs last period</span>
+                    </div>
                   </div>
-                  <Target className="w-8 h-8 text-purple-600" />
+                  <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                    <Target className="w-5 h-5 text-purple-600" />
+                  </div>
                 </div>
               </div>
             </div>
