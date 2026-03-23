@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Pause, CreditCard as Edit, BarChart3, Copy, Plus, Clock, Facebook, Instagram, Globe, MessageCircle, Target, TrendingUp, Users, Mail, Phone, Star, CheckCircle, AlertCircle, Activity, Sparkles, X, ArrowUpDown, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Play, Pause, CreditCard as Edit, BarChart3, Copy, Plus, Clock, Facebook, Instagram, Globe, MessageCircle, Target, TrendingUp, Users, Mail, Phone, Star, CheckCircle, AlertCircle, Activity, Sparkles, X, ArrowUpDown, AlertTriangle, Flame, ThermometerSun, Snowflake, Filter } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import AICampaignScore from '../components/AICampaignScore';
 import AIAudienceBuilder from '../components/AIAudienceBuilder';
@@ -22,6 +22,7 @@ export default function AgentCampaignDetail() {
   const [availableProperties, setAvailableProperties] = useState<any[]>([]);
   const [sortField, setSortField] = useState<'name' | 'priority_score' | 'status' | 'source'>('priority_score');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [showHotLeadsOnly, setShowHotLeadsOnly] = useState(false);
   const [automationSettings, setAutomationSettings] = useState({
     autoFollowUp: true,
     whatsappAutoReply: false,
@@ -214,6 +215,31 @@ export default function AgentCampaignDetail() {
       case 'completed': return 'bg-blue-100 text-blue-800';
       default: return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const getLeadTemperature = (score: number): 'hot' | 'warm' | 'cold' => {
+    if (score >= 80) return 'hot';
+    if (score >= 50) return 'warm';
+    return 'cold';
+  };
+
+  const getTemperatureIcon = (score: number) => {
+    const temp = getLeadTemperature(score);
+    if (temp === 'hot') return <Flame className="w-4 h-4" />;
+    if (temp === 'warm') return <ThermometerSun className="w-4 h-4" />;
+    return <Snowflake className="w-4 h-4" />;
+  };
+
+  const getTemperatureColor = (score: number) => {
+    const temp = getLeadTemperature(score);
+    if (temp === 'hot') return 'bg-red-100 text-red-700 border-red-200';
+    if (temp === 'warm') return 'bg-orange-100 text-orange-700 border-orange-200';
+    return 'bg-blue-100 text-blue-600 border-blue-200';
+  };
+
+  const getTemperatureLabel = (score: number) => {
+    const temp = getLeadTemperature(score);
+    return temp.charAt(0).toUpperCase() + temp.slice(1);
   };
 
   const handleSort = (field: 'name' | 'priority_score' | 'status' | 'source') => {
@@ -917,26 +943,39 @@ export default function AgentCampaignDetail() {
                       {leads.length} {leads.length === 1 ? 'lead' : 'leads'} generated
                       {leads.filter(l => l.priority_score >= 80).length > 0 && (
                         <span className="ml-2 text-red-600 font-medium">
-                          ({leads.filter(l => l.priority_score >= 80).length} high priority)
+                          ({leads.filter(l => l.priority_score >= 80).length} hot)
                         </span>
                       )}
                     </p>
                   </div>
-                  <button className="flex items-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors text-sm shadow-sm">
-                    <Plus className="w-4 h-4" />
-                    Add Lead
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setShowHotLeadsOnly(!showHotLeadsOnly)}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all text-sm font-medium ${
+                        showHotLeadsOnly
+                          ? 'bg-red-600 text-white shadow-md hover:bg-red-700'
+                          : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      <Filter className="w-4 h-4" />
+                      {showHotLeadsOnly ? 'Show All Leads' : 'Show Hot Leads Only'}
+                    </button>
+                    <button className="flex items-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors text-sm shadow-sm">
+                      <Plus className="w-4 h-4" />
+                      Add Lead
+                    </button>
+                  </div>
                 </div>
 
                 {leads.filter(l => l.priority_score >= 80).length > 0 && (
-                  <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="mb-4 bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-lg p-4 shadow-sm">
                     <div className="flex items-start gap-3">
-                      <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+                      <Flame className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
                       <div>
-                        <h4 className="font-semibold text-red-900 mb-1">High Priority Leads Detected</h4>
+                        <h4 className="font-semibold text-red-900 mb-1">Hot Leads Require Attention</h4>
                         <p className="text-sm text-red-800">
-                          You have {leads.filter(l => l.priority_score >= 80).length} high-value leads that require immediate attention.
-                          Priority is calculated based on budget range, source quality, and engagement level.
+                          You have {leads.filter(l => l.priority_score >= 80).length} hot leads based on high engagement, budget match, and quality signals.
+                          These leads are most likely to convert - contact them immediately.
                         </p>
                       </div>
                     </div>
@@ -989,28 +1028,29 @@ export default function AgentCampaignDetail() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
-                        {sortedLeads.map((lead: any) => {
+                        {sortedLeads.filter(lead => !showHotLeadsOnly || lead.priority_score >= 80).map((lead: any) => {
                           const priorityLevel = getPriorityLevel(lead.priority_score);
-                          const isHighPriority = priorityLevel === 'high';
+                          const temperature = getLeadTemperature(lead.priority_score);
+                          const isHot = temperature === 'hot';
 
                           return (
                             <tr
                               key={lead.id}
-                              className={`transition-colors ${
-                                isHighPriority
-                                  ? 'bg-red-50 hover:bg-red-100 border-l-4 border-l-red-500'
+                              className={`transition-all duration-200 ${
+                                isHot
+                                  ? 'bg-gradient-to-r from-red-50 to-orange-50 hover:from-red-100 hover:to-orange-100 border-l-4 border-l-red-500 hot-lead-glow'
+                                  : temperature === 'warm'
+                                  ? 'bg-orange-50/30 hover:bg-orange-50 border-l-4 border-l-orange-300'
                                   : 'hover:bg-gray-50'
                               }`}
                             >
                               <td className="py-4 px-4">
                                 <div className="flex items-center gap-2">
                                   <div className="font-medium text-gray-900">{lead.name}</div>
-                                  {isHighPriority && (
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-600 text-white text-xs font-semibold rounded-full">
-                                      <AlertTriangle className="w-3 h-3" />
-                                      HOT
-                                    </span>
-                                  )}
+                                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full border ${getTemperatureColor(lead.priority_score)}`}>
+                                    {getTemperatureIcon(lead.priority_score)}
+                                    {getTemperatureLabel(lead.priority_score)}
+                                  </span>
                                 </div>
                               </td>
                               <td className="py-4 px-4">
@@ -1039,16 +1079,34 @@ export default function AgentCampaignDetail() {
                               </td>
                               <td className="py-4 px-4">
                                 <div className="flex items-center gap-2">
-                                  <Star className={`w-5 h-5 ${getPriorityColor(lead.priority_score)}`} />
                                   <div className="flex flex-col">
-                                    <span className={`text-sm font-bold ${
-                                      lead.priority_score >= 80 ? 'text-red-600' :
-                                      lead.priority_score >= 60 ? 'text-yellow-600' :
-                                      'text-gray-600'
-                                    }`}>
-                                      {Math.round(lead.priority_score)}
-                                    </span>
-                                    <span className="text-xs text-gray-500 capitalize">{priorityLevel}</span>
+                                    <div className="flex items-center gap-1.5">
+                                      <span className={`text-2xl font-bold ${
+                                        lead.priority_score >= 80 ? 'text-red-600' :
+                                        lead.priority_score >= 50 ? 'text-orange-600' :
+                                        'text-blue-600'
+                                      }`}>
+                                        {Math.round(lead.priority_score)}
+                                      </span>
+                                      <span className="text-xs text-gray-400">/100</span>
+                                    </div>
+                                    <div className="flex items-center gap-1 mt-1">
+                                      {lead.property_clicks > 0 && (
+                                        <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded" title="Property clicks">
+                                          {lead.property_clicks} clicks
+                                        </span>
+                                      )}
+                                      {lead.whatsapp_replies > 0 && (
+                                        <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded" title="WhatsApp replies">
+                                          {lead.whatsapp_replies} replies
+                                        </span>
+                                      )}
+                                      {lead.visit_count > 1 && (
+                                        <span className="text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded" title="Site visits">
+                                          {lead.visit_count} visits
+                                        </span>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
                               </td>
