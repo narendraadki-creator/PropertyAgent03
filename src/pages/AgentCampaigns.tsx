@@ -11,10 +11,18 @@ export default function AgentCampaigns() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
-    fetchCampaigns();
+    initAuth();
   }, []);
+
+  const initAuth = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    setCurrentUser(user);
+    console.log('Initialized auth, user:', user ? user.id : 'none');
+    fetchCampaigns();
+  };
 
   const fetchCampaigns = async () => {
     try {
@@ -93,13 +101,16 @@ export default function AgentCampaigns() {
   const handleSeedData = async () => {
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      console.log('Current user before seeding:', user ? user.id : 'No user found');
+      console.log('Seeding with user:', currentUser ? currentUser.id : 'No current user');
 
-      if (!user) {
-        alert('Please refresh the page and try again. You must be logged in to add sample data.');
-        setLoading(false);
-        return;
+      if (!currentUser) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          alert('Authentication issue detected. Refreshing page...');
+          window.location.reload();
+          return;
+        }
+        setCurrentUser(user);
       }
 
       await seedCampaignData();

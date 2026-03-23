@@ -46,6 +46,7 @@ import ManagerLeads from './pages/ManagerLeads';
 import ManagerAnalytics from './pages/ManagerAnalytics';
 import ManagerProfile from './pages/ManagerProfile';
 import MarketTrends from './pages/MarketTrends';
+import AuthDebugPage from './pages/AuthDebugPage';
 
 function App() {
   return (
@@ -109,6 +110,9 @@ function App() {
 
           {/* Market Trends Route (accessible to all roles) */}
           <Route path="/market-trends" element={<MarketTrends />} />
+
+          {/* Debug Route */}
+          <Route path="/auth-debug" element={<AuthDebugPage />} />
         </Routes>
       </div>
     </Router>
