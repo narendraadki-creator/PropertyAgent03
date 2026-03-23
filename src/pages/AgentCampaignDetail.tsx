@@ -354,7 +354,10 @@ export default function AgentCampaignDetail() {
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold text-gray-900">Selected Properties</h3>
                 <button
-                  onClick={() => setShowPropertyModal(true)}
+                  onClick={() => {
+                    console.log('Add Property clicked');
+                    setShowPropertyModal(true);
+                  }}
                   className="flex items-center gap-2 text-sm text-teal-600 hover:text-teal-700 transition-colors"
                 >
                   <Plus className="w-4 h-4" />
@@ -755,14 +758,16 @@ export default function AgentCampaignDetail() {
             </div>
 
             <div className="flex-1 overflow-y-auto p-6">
-              {generateAISuggestions().length > 0 && (
-                <div className="mb-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Sparkles className="w-5 h-5 text-purple-600" />
-                    <h3 className="font-semibold text-gray-900">AI Suggested Properties</h3>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {generateAISuggestions().map((property) => (
+              {(() => {
+                const suggestions = generateAISuggestions();
+                return suggestions.length > 0 && (
+                  <div className="mb-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Sparkles className="w-5 h-5 text-purple-600" />
+                      <h3 className="font-semibold text-gray-900">AI Suggested Properties</h3>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {suggestions.map((property) => (
                       <div
                         key={property.id}
                         className="border-2 border-purple-200 bg-purple-50 rounded-lg overflow-hidden hover:border-purple-300 transition-all"
@@ -801,7 +806,8 @@ export default function AgentCampaignDetail() {
                     ))}
                   </div>
                 </div>
-              )}
+                );
+              })()}
 
               <div className="mb-4">
                 <h3 className="font-semibold text-gray-900 mb-3">All Properties</h3>
