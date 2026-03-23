@@ -761,6 +761,153 @@ export default function AgentCampaignDetail() {
           </div>
 
           <div className="p-6">
+            {activeTab === 'overview' && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="font-semibold text-gray-900 text-lg mb-4">Campaign Summary</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm text-blue-700 font-medium">Total Budget</p>
+                        <TrendingUp className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <p className="text-2xl font-bold text-blue-900">AED {(campaign.budget || 0).toLocaleString()}</p>
+                      <p className="text-xs text-blue-600 mt-1">across all channels</p>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm text-green-700 font-medium">Properties</p>
+                        <Target className="w-5 h-5 text-green-600" />
+                      </div>
+                      <p className="text-2xl font-bold text-green-900">{properties.length}</p>
+                      <p className="text-xs text-green-600 mt-1">selected for campaign</p>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm text-purple-700 font-medium">Total Leads</p>
+                        <Users className="w-5 h-5 text-purple-600" />
+                      </div>
+                      <p className="text-2xl font-bold text-purple-900">{leads.length}</p>
+                      <p className="text-xs text-purple-600 mt-1">
+                        {leads.filter(l => l.priority_score >= 80).length} high priority
+                      </p>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm text-amber-700 font-medium">Conversion Rate</p>
+                        <Activity className="w-5 h-5 text-amber-600" />
+                      </div>
+                      <p className="text-2xl font-bold text-amber-900">{conversionRate}%</p>
+                      <p className="text-xs text-amber-600 mt-1">clicks to conversions</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white border border-gray-200 rounded-lg p-5">
+                  <h4 className="font-semibold text-gray-900 mb-4">Campaign Details</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <p className="text-sm text-gray-600 mb-1">Campaign Type</p>
+                      <p className="font-medium text-gray-900 capitalize">{campaign.campaign_type}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 mb-1">Status</p>
+                      <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(campaign.status)}`}>
+                        {campaign.status}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 mb-1">Duration</p>
+                      <p className="font-medium text-gray-900">
+                        {campaign.start_date ? new Date(campaign.start_date).toLocaleDateString() : 'Not set'} -
+                        {campaign.end_date ? new Date(campaign.end_date).toLocaleDateString() : 'Ongoing'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 mb-1">AI Campaign Score</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-2xl font-bold text-teal-600">{campaign.ai_score || 75}</p>
+                        <span className="text-sm text-gray-500">/100</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {campaign.channel_budget_split && Object.keys(campaign.channel_budget_split).length > 0 && (
+                  <div className="bg-white border border-gray-200 rounded-lg p-5">
+                    <h4 className="font-semibold text-gray-900 mb-4">Channel Budget Distribution</h4>
+                    <div className="space-y-3">
+                      {Object.entries(campaign.channel_budget_split).map(([channel, budget]: [string, any]) => {
+                        if (budget > 0) {
+                          const percentage = ((budget / campaign.budget) * 100).toFixed(1);
+                          const channelInfo: { [key: string]: { icon: any, color: string, label: string } } = {
+                            facebook: { icon: Facebook, color: 'text-blue-600', label: 'Facebook' },
+                            instagram: { icon: Instagram, color: 'text-pink-600', label: 'Instagram' },
+                            google: { icon: Globe, color: 'text-red-600', label: 'Google Ads' },
+                            whatsapp: { icon: MessageCircle, color: 'text-green-600', label: 'WhatsApp' }
+                          };
+                          const info = channelInfo[channel.toLowerCase()];
+                          if (!info) return null;
+                          const IconComponent = info.icon;
+                          return (
+                            <div key={channel}>
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                  <IconComponent className={`w-5 h-5 ${info.color}`} />
+                                  <span className="font-medium text-gray-900">{info.label}</span>
+                                </div>
+                                <div className="text-right">
+                                  <p className="font-semibold text-gray-900">AED {budget.toLocaleString()}</p>
+                                  <p className="text-xs text-gray-500">{percentage}%</p>
+                                </div>
+                              </div>
+                              <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                                <div
+                                  className={`h-2 rounded-full transition-all duration-500 ${
+                                    channel.toLowerCase() === 'instagram' ? 'bg-gradient-to-r from-pink-500 to-purple-600' :
+                                    channel.toLowerCase() === 'facebook' ? 'bg-blue-600' :
+                                    channel.toLowerCase() === 'google' ? 'bg-red-600' :
+                                    'bg-green-600'
+                                  }`}
+                                  style={{ width: `${percentage}%` }}
+                                />
+                              </div>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                <div className="bg-white border border-gray-200 rounded-lg p-5">
+                  <h4 className="font-semibold text-gray-900 mb-4">Quick Performance Metrics</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="text-center p-4 bg-gray-50 rounded-lg">
+                      <p className="text-3xl font-bold text-gray-900">{analytics?.totals.views?.toLocaleString() || '0'}</p>
+                      <p className="text-sm text-gray-600 mt-1">Total Views</p>
+                    </div>
+                    <div className="text-center p-4 bg-gray-50 rounded-lg">
+                      <p className="text-3xl font-bold text-gray-900">{analytics?.totals.clicks?.toLocaleString() || '0'}</p>
+                      <p className="text-sm text-gray-600 mt-1">Clicks</p>
+                    </div>
+                    <div className="text-center p-4 bg-gray-50 rounded-lg">
+                      <p className="text-3xl font-bold text-gray-900">{analytics?.totals.leads?.toLocaleString() || '0'}</p>
+                      <p className="text-sm text-gray-600 mt-1">Leads Generated</p>
+                    </div>
+                    <div className="text-center p-4 bg-gray-50 rounded-lg">
+                      <p className="text-3xl font-bold text-gray-900">{analytics?.totals.conversions?.toLocaleString() || '0'}</p>
+                      <p className="text-sm text-gray-600 mt-1">Conversions</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {activeTab === 'leads' && (
               <div>
                 <div className="flex items-center justify-between mb-6">
