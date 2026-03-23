@@ -38,6 +38,7 @@ import CreateCampaign from './pages/CreateCampaign';
 import AgentCampaigns from './pages/AgentCampaigns';
 import AgentCreateCampaign from './pages/AgentCreateCampaign';
 import AgentCampaignDetail from './pages/AgentCampaignDetail';
+import AgentEditCampaign from './pages/AgentEditCampaign';
 import ManagerDashboard from './pages/ManagerDashboard';
 import ManagerAgents from './pages/ManagerAgents';
 import ManagerAgentDetails from './pages/ManagerAgentDetails';
@@ -73,6 +74,7 @@ function App() {
           <Route path="/agent/campaigns" element={<AgentCampaigns />} />
           <Route path="/agent/campaigns/create" element={<AgentCreateCampaign />} />
           <Route path="/agent/campaigns/:id" element={<AgentCampaignDetail />} />
+          <Route path="/agent/campaigns/:id/edit" element={<AgentEditCampaign />} />
           
           {/* Developer Routes */}
           <Route path="/developer/dashboard" element={<DeveloperDashboard />} />

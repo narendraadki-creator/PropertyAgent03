@@ -84,23 +84,47 @@ export default function AgentCampaignDetail() {
 
   const handleDuplicate = async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      const newCampaign = {
+        project_id: campaign.project_id,
+        agent_id: user?.id || campaign.agent_id,
+        title: `${campaign.title} (Copy)`,
+        description: campaign.description,
+        campaign_type: campaign.campaign_type,
+        status: 'draft',
+        budget: campaign.budget,
+        start_date: campaign.start_date,
+        end_date: campaign.end_date,
+        target_platforms: campaign.target_platforms,
+        creative_assets: campaign.creative_assets,
+        content_template: campaign.content_template,
+        performance_metrics: {
+          shares: 0,
+          clicks: 0,
+          views: 0
+        }
+      };
+
       const { data, error } = await supabase
         .from('campaigns')
-        .insert({
-          ...campaign,
-          id: undefined,
-          title: `${campaign.title} (Copy)`,
-          status: 'draft',
-          created_at: undefined,
-          updated_at: undefined
-        })
+        .insert(newCampaign)
         .select()
         .single();
 
-      if (error) throw error;
-      if (data) navigate(`/agent/campaigns/${data.id}`);
-    } catch (error) {
+      if (error) {
+        console.error('Duplicate error:', error);
+        alert('Failed to duplicate campaign: ' + error.message);
+        return;
+      }
+
+      if (data) {
+        alert('Campaign duplicated successfully!');
+        navigate(`/agent/campaigns/${data.id}`);
+      }
+    } catch (error: any) {
       console.error('Error duplicating campaign:', error);
+      alert('Failed to duplicate campaign: ' + error.message);
     }
   };
 
