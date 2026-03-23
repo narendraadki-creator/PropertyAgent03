@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Campaign } from '../types';
 import { supabase } from '../lib/supabase';
-import CampaignCard from '../components/CampaignCard';
-import { Plus, Filter, Search, Rocket } from 'lucide-react';
+import { Plus, Filter, Search, Rocket, Database } from 'lucide-react';
+import { seedCampaignData } from '../utils/seedCampaignData';
 
 export default function AgentCampaigns() {
   const navigate = useNavigate();
@@ -75,6 +75,20 @@ export default function AgentCampaigns() {
     }
   };
 
+  const handleSeedData = async () => {
+    setLoading(true);
+    try {
+      await seedCampaignData();
+      await fetchCampaigns();
+      alert('Sample campaign data added successfully!');
+    } catch (error) {
+      console.error('Error seeding data:', error);
+      alert('Failed to seed campaign data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filteredCampaigns = campaigns.filter(campaign => {
     const matchesSearch = campaign.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       campaign.description?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -98,13 +112,24 @@ export default function AgentCampaigns() {
               <h1 className="text-3xl font-bold mb-2">My Campaigns</h1>
               <p className="text-teal-100">Create and manage social media campaigns for projects</p>
             </div>
-            <button
-              onClick={() => navigate('/agent/campaigns/create')}
-              className="flex items-center gap-2 bg-white text-teal-600 px-6 py-3 rounded-lg font-medium hover:bg-teal-50 transition-colors shadow-lg"
-            >
-              <Plus className="w-5 h-5" />
-              Create Campaign
-            </button>
+            <div className="flex items-center gap-2">
+              {campaigns.length === 0 && (
+                <button
+                  onClick={handleSeedData}
+                  className="flex items-center gap-2 bg-purple-600 text-white px-4 py-3 rounded-lg font-medium hover:bg-purple-700 transition-colors shadow-lg"
+                >
+                  <Database className="w-5 h-5" />
+                  Add Sample Data
+                </button>
+              )}
+              <button
+                onClick={() => navigate('/agent/campaigns/create')}
+                className="flex items-center gap-2 bg-white text-teal-600 px-6 py-3 rounded-lg font-medium hover:bg-teal-50 transition-colors shadow-lg"
+              >
+                <Plus className="w-5 h-5" />
+                Create Campaign
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-4 gap-4">
@@ -187,13 +212,60 @@ export default function AgentCampaigns() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredCampaigns.map((campaign) => (
-              <CampaignCard
+              <div
                 key={campaign.id}
-                campaign={campaign}
-                onView={(c) => navigate(`/agent/campaigns/${c.id}`)}
-                onEdit={(c) => navigate(`/agent/campaigns/${c.id}/edit`)}
-                onDelete={handleDelete}
-              />
+                onClick={() => navigate(`/agent/campaigns/${campaign.id}`)}
+                className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-lg transition-shadow cursor-pointer"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900 mb-1">{campaign.title}</h3>
+                    <p className="text-sm text-gray-600 line-clamp-2">{campaign.description}</p>
+                  </div>
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ml-2 ${
+                    campaign.status === 'active' ? 'bg-green-100 text-green-800' :
+                    campaign.status === 'paused' ? 'bg-yellow-100 text-yellow-800' :
+                    campaign.status === 'completed' ? 'bg-blue-100 text-blue-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {campaign.status}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+                  {campaign.targetPlatforms && campaign.targetPlatforms.length > 0 && (
+                    <div className="flex items-center gap-1">
+                      {campaign.targetPlatforms.slice(0, 3).map((platform: string, i: number) => (
+                        <span key={i} className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center text-xs">
+                          {platform[0]}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <span>{campaign.campaignType || 'General'}</span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3 pt-3 border-t border-gray-100">
+                  <div>
+                    <p className="text-xs text-gray-500">Views</p>
+                    <p className="text-lg font-semibold text-gray-900">
+                      {campaign.performanceMetrics?.views || 0}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Leads</p>
+                    <p className="text-lg font-semibold text-gray-900">
+                      {campaign.performanceMetrics?.shares || 0}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Clicks</p>
+                    <p className="text-lg font-semibold text-gray-900">
+                      {campaign.performanceMetrics?.clicks || 0}
+                    </p>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         )}
