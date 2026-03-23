@@ -73,9 +73,15 @@ export interface Lead {
   requirements: string;
   notes: string[];
   reminders: Reminder[];
-  score: number; // 1-10 scoring
+  score: number;
   tags: string[];
   nextFollowUp?: string;
+  latitude?: number;
+  longitude?: number;
+  city?: string;
+  state?: string;
+  country?: string;
+  postal_code?: string;
 }
 
 export interface Reminder {

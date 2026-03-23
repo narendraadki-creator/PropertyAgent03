@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Search, Filter, Phone, Mail, MessageCircle, Eye, Plus, Clock, Star, Tag, Calendar, CheckCircle, Edit2, ChevronDown, Bell } from 'lucide-react';
+import { ArrowLeft, Search, Filter, Phone, Mail, MessageCircle, Eye, Plus, Clock, Star, Tag, Calendar, CheckCircle, CreditCard as Edit2, ChevronDown, Bell, List, Map } from 'lucide-react';
 import { mockLeads } from '../data/mockData';
 import { Lead } from '../types';
 import RoleBasedLayout from '../components/RoleBasedLayout';
 import { mockCurrentUser } from '../data/mockData';
 import { applyStageAutomation } from '../utils/stageAutomation';
+import GeoHeatmap from '../components/GeoHeatmap';
 
 const LeadsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ const LeadsPage: React.FC = () => {
   const [updatedLeadId, setUpdatedLeadId] = useState<string | null>(null);
   const [renderCount, setRenderCount] = useState(0);
   const [showAutomationNotice, setShowAutomationNotice] = useState(false);
+  const [viewMode, setViewMode] = useState<'table' | 'map'>('table');
 
   React.useEffect(() => {
     setRenderCount(prev => prev + 1);
@@ -229,6 +231,32 @@ const LeadsPage: React.FC = () => {
               ))}
             </div>
           </div>
+
+          {/* View Toggle */}
+          <div className="flex space-x-2 bg-neutral-100 rounded-lg p-1 mt-3">
+            <button
+              onClick={() => setViewMode('table')}
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium font-montserrat transition-all duration-200 flex items-center justify-center gap-2 ${
+                viewMode === 'table'
+                  ? 'bg-white text-primary-600 shadow-sm'
+                  : 'text-neutral-600 hover:text-neutral-800'
+              }`}
+            >
+              <List className="w-4 h-4" />
+              Table View
+            </button>
+            <button
+              onClick={() => setViewMode('map')}
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium font-montserrat transition-all duration-200 flex items-center justify-center gap-2 ${
+                viewMode === 'map'
+                  ? 'bg-white text-primary-600 shadow-sm'
+                  : 'text-neutral-600 hover:text-neutral-800'
+              }`}
+            >
+              <Map className="w-4 h-4" />
+              Map View
+            </button>
+          </div>
         </div>
       </div>
 
@@ -268,9 +296,23 @@ const LeadsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Leads List */}
+      {/* Content Area */}
       <div className="px-4 py-6 pb-24">
-        {filteredLeads.length === 0 ? (
+        {viewMode === 'map' ? (
+          <GeoHeatmap
+            leads={filteredLeads.map(lead => ({
+              id: lead.id,
+              name: lead.buyerName,
+              latitude: lead.latitude || 0,
+              longitude: lead.longitude || 0,
+              city: lead.city,
+              state: lead.state,
+              budget: typeof lead.budget === 'string' ? parseFloat(lead.budget.replace(/[^0-9.-]+/g, '')) : lead.budget,
+              stage: lead.stage
+            }))}
+            onLeadClick={(leadId) => navigate(`/leads/${leadId}`)}
+          />
+        ) : filteredLeads.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm border border-neutral-100 p-8 text-center">
             <Search className="w-12 h-12 text-neutral-400 mx-auto mb-4" strokeWidth={1.5} />
             <h3 className="text-lg font-medium text-neutral-600 mb-2">No leads found</h3>

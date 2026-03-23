@@ -50,6 +50,7 @@ import MarketTrends from './pages/MarketTrends';
 import AuthDebugPage from './pages/AuthDebugPage';
 import LoginPage from './pages/LoginPage';
 import TestPropertyRecommendations from './pages/TestPropertyRecommendations';
+import TestGeoHeatmap from './pages/TestGeoHeatmap';
 
 function App() {
   return (
@@ -121,6 +122,7 @@ function App() {
           {/* Debug Routes */}
           <Route path="/auth-debug" element={<AuthDebugPage />} />
           <Route path="/test/property-recommendations" element={<TestPropertyRecommendations />} />
+          <Route path="/test/geo-heatmap" element={<TestGeoHeatmap />} />
         </Routes>
       </div>
     </Router>
