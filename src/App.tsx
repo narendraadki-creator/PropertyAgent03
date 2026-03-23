@@ -49,6 +49,7 @@ import ManagerProfile from './pages/ManagerProfile';
 import MarketTrends from './pages/MarketTrends';
 import AuthDebugPage from './pages/AuthDebugPage';
 import LoginPage from './pages/LoginPage';
+import TestPropertyRecommendations from './pages/TestPropertyRecommendations';
 
 function App() {
   return (
@@ -117,8 +118,9 @@ function App() {
           {/* Market Trends Route (accessible to all roles) */}
           <Route path="/market-trends" element={<MarketTrends />} />
 
-          {/* Debug Route */}
+          {/* Debug Routes */}
           <Route path="/auth-debug" element={<AuthDebugPage />} />
+          <Route path="/test/property-recommendations" element={<TestPropertyRecommendations />} />
         </Routes>
       </div>
     </Router>
