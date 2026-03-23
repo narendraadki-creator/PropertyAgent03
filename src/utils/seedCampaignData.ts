@@ -189,27 +189,57 @@ export async function seedCampaignData() {
           source: 'Instagram',
           budget_range: '3M - 5M AED',
           status: 'contacted',
-          priority_score: 85
+          engagement_score: 85
         },
         {
           campaign_id: campaigns[0].id,
           name: 'Sarah Johnson',
           email: 'sarah.j@example.com',
           phone: '+971 55 234 5678',
-          source: 'Facebook',
-          budget_range: '2M - 3M AED',
+          source: 'Google',
+          budget_range: '5M+ AED',
           status: 'new',
-          priority_score: 92
+          engagement_score: 90
         },
         {
           campaign_id: campaigns[0].id,
           name: 'Mohammed Hassan',
           email: 'mohammed.h@example.com',
           phone: '+971 56 345 6789',
-          source: 'Google',
-          budget_range: '5M+ AED',
+          source: 'Referral',
+          budget_range: '8M - 10M AED',
           status: 'new',
-          priority_score: 95
+          engagement_score: 95
+        },
+        {
+          campaign_id: campaigns[0].id,
+          name: 'Emily Chen',
+          email: 'emily.c@example.com',
+          phone: '+971 54 567 8901',
+          source: 'Facebook',
+          budget_range: '1M - 2M AED',
+          status: 'new',
+          engagement_score: 65
+        },
+        {
+          campaign_id: campaigns[0].id,
+          name: 'James Peterson',
+          email: 'james.p@example.com',
+          phone: '+971 52 678 9012',
+          source: 'LinkedIn',
+          budget_range: '2M - 3M AED',
+          status: 'contacted',
+          engagement_score: 75
+        },
+        {
+          campaign_id: campaigns[0].id,
+          name: 'Fatima Al-Said',
+          email: 'fatima.s@example.com',
+          phone: '+971 50 789 0123',
+          source: 'Website',
+          budget_range: '500K - 1M AED',
+          status: 'new',
+          engagement_score: 45
         }
       ];
 
