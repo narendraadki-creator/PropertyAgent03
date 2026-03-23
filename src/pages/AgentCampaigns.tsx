@@ -106,8 +106,11 @@ export default function AgentCampaigns() {
       if (!currentUser) {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
-          alert('Authentication issue detected. Refreshing page...');
-          window.location.reload();
+          const shouldLogin = confirm('You need to log in first to add sample data. Go to login page?');
+          if (shouldLogin) {
+            navigate('/login');
+          }
+          setLoading(false);
           return;
         }
         setCurrentUser(user);
@@ -118,7 +121,14 @@ export default function AgentCampaigns() {
       alert('Sample campaign data added successfully! Click on any campaign to view details.');
     } catch (error: any) {
       console.error('Error seeding data:', error);
-      alert(`Failed to seed campaign data: ${error.message || 'Unknown error'}`);
+      if (error.message?.includes('Authentication required')) {
+        const shouldLogin = confirm('Authentication error. Go to login page?');
+        if (shouldLogin) {
+          navigate('/login');
+        }
+      } else {
+        alert(`Failed to seed campaign data: ${error.message || 'Unknown error'}`);
+      }
     } finally {
       setLoading(false);
     }

@@ -47,12 +47,16 @@ import ManagerAnalytics from './pages/ManagerAnalytics';
 import ManagerProfile from './pages/ManagerProfile';
 import MarketTrends from './pages/MarketTrends';
 import AuthDebugPage from './pages/AuthDebugPage';
+import LoginPage from './pages/LoginPage';
 
 function App() {
   return (
     <Router>
       <div className="min-h-screen bg-neutral-50">
         <Routes>
+          {/* Auth Routes */}
+          <Route path="/login" element={<LoginPage />} />
+
           {/* Agent Routes */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/developer/:developerId" element={<DeveloperPropertiesPage />} />
