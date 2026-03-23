@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, MapPin, Users, TrendingUp, RefreshCw, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Play, MapPin, Users, TrendingUp, RefreshCw, CheckCircle, Target } from 'lucide-react';
 import { seedGeoData } from '../utils/seedGeoData';
+import { seedCampaignGeoData } from '../utils/seedCampaignGeoData';
 
 export default function TestGeoHeatmap() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [campaignLoading, setCampaignLoading] = useState(false);
   const [seeded, setSeeded] = useState(false);
+  const [campaignSeeded, setCampaignSeeded] = useState(false);
   const [result, setResult] = useState<any>(null);
+  const [campaignResult, setCampaignResult] = useState<any>(null);
 
   const handleSeedData = async () => {
     setLoading(true);
@@ -20,6 +24,20 @@ export default function TestGeoHeatmap() {
       alert('Error seeding data. Check console for details.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSeedCampaignData = async () => {
+    setCampaignLoading(true);
+    try {
+      const seedResult = await seedCampaignGeoData();
+      setCampaignResult(seedResult);
+      setCampaignSeeded(true);
+    } catch (error) {
+      console.error('Error seeding campaign geo data:', error);
+      alert('Error seeding campaign data. Check console for details.');
+    } finally {
+      setCampaignLoading(false);
     }
   };
 
@@ -69,7 +87,7 @@ export default function TestGeoHeatmap() {
               ) : (
                 <>
                   <Play className="w-5 h-5" />
-                  Seed Geographic Data
+                  Seed Lead Data
                 </>
               )}
             </button>
@@ -82,16 +100,68 @@ export default function TestGeoHeatmap() {
           </div>
         </div>
 
+        <div className="bg-gradient-to-r from-teal-500 to-emerald-600 rounded-lg p-6 mb-6 text-white">
+          <h2 className="text-xl font-bold mb-2">Campaign Lead Geographic Data</h2>
+          <p className="text-teal-50 mb-4">
+            Add geographic coordinates to campaign leads for heatmap visualization in campaign details.
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={handleSeedCampaignData}
+              disabled={campaignLoading}
+              className="bg-white text-teal-600 px-6 py-3 rounded-lg font-semibold hover:bg-teal-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {campaignLoading ? (
+                <>
+                  <RefreshCw className="w-5 h-5 animate-spin" />
+                  Seeding Data...
+                </>
+              ) : campaignSeeded ? (
+                <>
+                  <CheckCircle className="w-5 h-5" />
+                  Data Seeded
+                </>
+              ) : (
+                <>
+                  <Target className="w-5 h-5" />
+                  Seed Campaign Lead Data
+                </>
+              )}
+            </button>
+            <button
+              onClick={() => navigate('/agent/campaigns')}
+              className="bg-teal-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-teal-700 transition-colors border-2 border-white"
+            >
+              View Campaigns
+            </button>
+          </div>
+        </div>
+
         {result && (
           <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
             <div className="flex items-center gap-2 mb-3">
               <CheckCircle className="w-6 h-6 text-green-600" />
-              <h3 className="font-bold text-green-900">Success!</h3>
+              <h3 className="font-bold text-green-900">Lead Data Seeded!</h3>
             </div>
             <p className="text-green-800 mb-2">{result.message}</p>
             {result.leads && (
               <p className="text-sm text-green-700">
                 Updated {result.leads} leads with geographic coordinates
+              </p>
+            )}
+          </div>
+        )}
+
+        {campaignResult && (
+          <div className="bg-teal-50 border border-teal-200 rounded-lg p-6 mb-6">
+            <div className="flex items-center gap-2 mb-3">
+              <CheckCircle className="w-6 h-6 text-teal-600" />
+              <h3 className="font-bold text-teal-900">Campaign Lead Data Seeded!</h3>
+            </div>
+            <p className="text-teal-800 mb-2">{campaignResult.message}</p>
+            {campaignResult.leads && (
+              <p className="text-sm text-teal-700">
+                Updated {campaignResult.leads} campaign leads with geographic coordinates
               </p>
             )}
           </div>

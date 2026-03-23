@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Pause, CreditCard as Edit, BarChart3, Copy, Plus, Clock, Facebook, Instagram, Globe, MessageCircle, Target, TrendingUp, Users, Mail, Phone, Star, CheckCircle, AlertCircle, Activity, Sparkles, X, ArrowUpDown, AlertTriangle, Flame, ThermometerSun, Snowflake, Filter, Award } from 'lucide-react';
+import { ArrowLeft, Play, Pause, CreditCard as Edit, BarChart3, Copy, Plus, Clock, Facebook, Instagram, Globe, MessageCircle, Target, TrendingUp, Users, Mail, Phone, Star, CheckCircle, AlertCircle, Activity, Sparkles, X, ArrowUpDown, AlertTriangle, Flame, ThermometerSun, Snowflake, Filter, Award, List, Map } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import AICampaignScore from '../components/AICampaignScore';
 import AIAudienceBuilder from '../components/AIAudienceBuilder';
 import AIContentGenerator from '../components/AIContentGenerator';
 import SmartBudgetSplit from '../components/SmartBudgetSplit';
+import GeoHeatmap from '../components/GeoHeatmap';
 import { getPriorityColor, getPriorityBadgeColor, getPriorityLevel } from '../utils/leadPriorityCalculator';
 
 export default function AgentCampaignDetail() {
@@ -23,6 +24,7 @@ export default function AgentCampaignDetail() {
   const [sortField, setSortField] = useState<'name' | 'priority_score' | 'status' | 'source'>('priority_score');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [showHotLeadsOnly, setShowHotLeadsOnly] = useState(false);
+  const [leadsViewMode, setLeadsViewMode] = useState<'table' | 'map'>('table');
   const [automationSettings, setAutomationSettings] = useState({
     autoFollowUp: true,
     whatsappAutoReply: false,
@@ -1032,6 +1034,31 @@ export default function AgentCampaignDetail() {
                   </div>
                 </div>
 
+                <div className="flex space-x-2 bg-gray-100 rounded-lg p-1 mb-6">
+                  <button
+                    onClick={() => setLeadsViewMode('table')}
+                    className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
+                      leadsViewMode === 'table'
+                        ? 'bg-white text-teal-600 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-800'
+                    }`}
+                  >
+                    <List className="w-4 h-4" />
+                    Table View
+                  </button>
+                  <button
+                    onClick={() => setLeadsViewMode('map')}
+                    className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
+                      leadsViewMode === 'map'
+                        ? 'bg-white text-teal-600 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-800'
+                    }`}
+                  >
+                    <Map className="w-4 h-4" />
+                    Map View
+                  </button>
+                </div>
+
                 {leads.filter(l => l.priority_score >= 80).length > 0 && (
                   <div className="mb-4 bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-lg p-4 shadow-sm">
                     <div className="flex items-start gap-3">
@@ -1047,7 +1074,23 @@ export default function AgentCampaignDetail() {
                   </div>
                 )}
 
-                {leads.length > 0 ? (
+                {leadsViewMode === 'map' ? (
+                  <GeoHeatmap
+                    leads={(showHotLeadsOnly ? leads.filter(l => l.priority_score >= 80) : leads).map(lead => ({
+                      id: lead.id,
+                      name: lead.name,
+                      latitude: lead.latitude || 0,
+                      longitude: lead.longitude || 0,
+                      city: lead.city,
+                      state: lead.state,
+                      budget: lead.budget,
+                      stage: lead.status
+                    }))}
+                    onLeadClick={(leadId) => {
+                      console.log('Lead clicked:', leadId);
+                    }}
+                  />
+                ) : leads.length > 0 ? (
                   <div className="overflow-x-auto bg-white border border-gray-200 rounded-lg">
                     <table className="w-full">
                       <thead className="bg-gray-50">
