@@ -232,6 +232,12 @@ export default function AgentCampaignDetail() {
 
   const handleAddProperty = async (propertyId: string, isSuggested: boolean = false) => {
     try {
+      const { data: propertyData } = await supabase
+        .from('projects')
+        .select('name')
+        .eq('id', propertyId)
+        .maybeSingle();
+
       const { error } = await supabase
         .from('campaign_properties')
         .insert({
@@ -241,6 +247,13 @@ export default function AgentCampaignDetail() {
         });
 
       if (!error) {
+        await supabase.from('campaign_activities').insert({
+          campaign_id: id,
+          activity_type: 'property_added',
+          description: `Added ${propertyData?.name || 'property'} to campaign${isSuggested ? ' (AI suggested)' : ''}`,
+          metadata: { property_id: propertyId, is_suggested: isSuggested }
+        });
+
         await fetchCampaignData();
       }
     } catch (error) {
@@ -273,6 +286,12 @@ export default function AgentCampaignDetail() {
 
   const handleRemoveProperty = async (propertyId: string) => {
     try {
+      const { data: propertyData } = await supabase
+        .from('projects')
+        .select('name')
+        .eq('id', propertyId)
+        .maybeSingle();
+
       const { error } = await supabase
         .from('campaign_properties')
         .delete()
@@ -280,6 +299,13 @@ export default function AgentCampaignDetail() {
         .eq('project_id', propertyId);
 
       if (!error) {
+        await supabase.from('campaign_activities').insert({
+          campaign_id: id,
+          activity_type: 'property_removed',
+          description: `Removed ${propertyData?.name || 'property'} from campaign`,
+          metadata: { property_id: propertyId }
+        });
+
         await fetchCampaignData();
       }
     } catch (error) {
@@ -570,22 +596,78 @@ export default function AgentCampaignDetail() {
             </div>
 
             <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <h3 className="font-semibold text-gray-900 mb-4">Recent Activity</h3>
-              <div className="space-y-3">
-                {activities.length > 0 ? activities.map((activity: any) => (
-                  <div key={activity.id} className="flex items-start gap-3 pb-3 border-b border-gray-100 last:border-0 last:pb-0">
-                    <div className="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
-                      <Activity className="w-4 h-4 text-teal-600" />
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-gray-900">Recent Activity</h3>
+                <span className="text-xs text-gray-500">{activities.length} events</span>
+              </div>
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {activities.length > 0 ? activities.map((activity: any) => {
+                  const getActivityIcon = (type: string) => {
+                    switch(type) {
+                      case 'status_change':
+                        return { icon: Play, bg: 'bg-teal-100', color: 'text-teal-600' };
+                      case 'lead_received':
+                        return { icon: Users, bg: 'bg-green-100', color: 'text-green-600' };
+                      case 'follow_up_sent':
+                        return { icon: Mail, bg: 'bg-blue-100', color: 'text-blue-600' };
+                      case 'campaign_launched':
+                        return { icon: Play, bg: 'bg-purple-100', color: 'text-purple-600' };
+                      case 'automation_change':
+                        return { icon: Sparkles, bg: 'bg-amber-100', color: 'text-amber-600' };
+                      case 'property_added':
+                        return { icon: Plus, bg: 'bg-green-100', color: 'text-green-600' };
+                      case 'property_removed':
+                        return { icon: X, bg: 'bg-red-100', color: 'text-red-600' };
+                      default:
+                        return { icon: Activity, bg: 'bg-gray-100', color: 'text-gray-600' };
+                    }
+                  };
+
+                  const formatTimestamp = (timestamp: string) => {
+                    const date = new Date(timestamp);
+                    const now = new Date();
+                    const diffMs = now.getTime() - date.getTime();
+                    const diffMins = Math.floor(diffMs / 60000);
+                    const diffHours = Math.floor(diffMs / 3600000);
+                    const diffDays = Math.floor(diffMs / 86400000);
+
+                    if (diffMins < 1) return 'Just now';
+                    if (diffMins < 60) return `${diffMins}m ago`;
+                    if (diffHours < 24) return `${diffHours}h ago`;
+                    if (diffDays < 7) return `${diffDays}d ago`;
+
+                    return date.toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    });
+                  };
+
+                  const iconData = getActivityIcon(activity.activity_type);
+                  const IconComponent = iconData.icon;
+
+                  return (
+                    <div key={activity.id} className="flex items-start gap-3 pb-3 border-b border-gray-100 last:border-0 last:pb-0">
+                      <div className={`w-8 h-8 rounded-full ${iconData.bg} flex items-center justify-center flex-shrink-0`}>
+                        <IconComponent className={`w-4 h-4 ${iconData.color}`} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-gray-900 font-medium">{activity.description}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          {formatTimestamp(activity.created_at)}
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-900">{activity.description}</p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {new Date(activity.created_at).toLocaleString()}
-                      </p>
+                  );
+                }) : (
+                  <div className="text-center py-8">
+                    <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
+                      <Activity className="w-6 h-6 text-gray-400" />
                     </div>
+                    <p className="text-sm text-gray-500">No activity yet</p>
+                    <p className="text-xs text-gray-400 mt-1">Activities will appear here as your campaign progresses</p>
                   </div>
-                )) : (
-                  <p className="text-sm text-gray-500 text-center py-4">No activity yet</p>
                 )}
               </div>
             </div>
