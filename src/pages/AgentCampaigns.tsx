@@ -80,10 +80,10 @@ export default function AgentCampaigns() {
     try {
       await seedCampaignData();
       await fetchCampaigns();
-      alert('Sample campaign data added successfully!');
-    } catch (error) {
+      alert('Sample campaign data added successfully! Click on any campaign to view details.');
+    } catch (error: any) {
       console.error('Error seeding data:', error);
-      alert('Failed to seed campaign data');
+      alert(`Failed to seed campaign data: ${error.message || 'Unknown error'}`);
     } finally {
       setLoading(false);
     }

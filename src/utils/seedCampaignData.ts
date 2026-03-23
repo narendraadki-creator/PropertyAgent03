@@ -2,14 +2,66 @@ import { supabase } from '../lib/supabase';
 
 export async function seedCampaignData() {
   try {
-    const { data: projects } = await supabase
+    let { data: projects } = await supabase
       .from('projects')
       .select('id')
       .limit(3);
 
     if (!projects || projects.length === 0) {
-      console.log('No projects found. Please add projects first.');
-      return;
+      const sampleProjects = [
+        {
+          name: 'Marina Bay Residences',
+          developer_name: 'Emaar Properties',
+          location: 'Dubai Marina',
+          property_type: 'Apartment',
+          price: 2500000,
+          bedrooms: 3,
+          bathrooms: 3,
+          area: 2100,
+          description: 'Luxury waterfront living with stunning marina views',
+          image: 'https://images.pexels.com/photos/1732414/pexels-photo-1732414.jpeg?auto=compress&cs=tinysrgb&w=800',
+          amenities: ['Pool', 'Gym', 'Beach Access']
+        },
+        {
+          name: 'Palm Jumeirah Villa',
+          developer_name: 'Nakheel',
+          location: 'Palm Jumeirah',
+          property_type: 'Villa',
+          price: 8500000,
+          bedrooms: 5,
+          bathrooms: 6,
+          area: 5500,
+          description: 'Exclusive beachfront villa on Palm Jumeirah',
+          image: 'https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=800',
+          amenities: ['Private Beach', 'Pool', 'Garden']
+        },
+        {
+          name: 'Downtown Heights',
+          developer_name: 'Emaar Properties',
+          location: 'Downtown Dubai',
+          property_type: 'Apartment',
+          price: 1800000,
+          bedrooms: 2,
+          bathrooms: 2,
+          area: 1400,
+          description: 'Modern apartments in the heart of Dubai',
+          image: 'https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=800',
+          amenities: ['Gym', 'Parking', 'Security']
+        }
+      ];
+
+      const { data: newProjects, error: projectError } = await supabase
+        .from('projects')
+        .insert(sampleProjects)
+        .select('id');
+
+      if (projectError) {
+        console.error('Error creating sample projects:', projectError);
+        throw new Error('Failed to create sample projects. Please ensure you have the necessary permissions.');
+      }
+
+      projects = newProjects;
+      console.log('Created sample projects');
     }
 
     const sampleCampaigns = [
