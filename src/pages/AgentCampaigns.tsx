@@ -47,6 +47,7 @@ export default function AgentCampaigns() {
           description: campaign.description,
           campaignType: campaign.campaign_type,
           status: campaign.status,
+          budget: campaign.budget,
           startDate: campaign.start_date,
           endDate: campaign.end_date,
           targetPlatforms: campaign.target_platforms || [],

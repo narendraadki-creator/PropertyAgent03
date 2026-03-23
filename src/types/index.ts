@@ -350,6 +350,7 @@ export interface Campaign {
   description?: string;
   campaignType: CampaignType;
   status: CampaignStatus;
+  budget?: number;
   startDate?: string;
   endDate?: string;
   targetPlatforms: SocialPlatform[];
@@ -363,6 +364,7 @@ export interface Campaign {
     body?: string;
     callToAction?: string;
     hashtags?: string[];
+    content?: string;
     variations?: Array<{
       platform: SocialPlatform;
       content: string;

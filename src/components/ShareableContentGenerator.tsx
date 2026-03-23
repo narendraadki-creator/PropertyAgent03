@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Project, CampaignType, SocialPlatform } from '../types';
 import { generateCampaignContent, generatePlatformSpecificContent } from '../utils/campaignContentGenerator';
 import { Wand2, Copy, Check } from 'lucide-react';
@@ -39,6 +39,12 @@ export default function ShareableContentGenerator({
       onContentGenerated(platformContent, baseContent.hashtags);
     }
   };
+
+  useEffect(() => {
+    if (project && campaignType) {
+      handleGenerate();
+    }
+  }, [project.id, campaignType]);
 
   const handleCopy = async () => {
     const success = await copyToClipboard(generatedContent);
