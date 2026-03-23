@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Pause, CreditCard as Edit, BarChart3, Copy, Plus, Clock, Facebook, Instagram, Globe, MessageCircle, Target, TrendingUp, Users, Mail, Phone, Star, CheckCircle, AlertCircle, Activity, Sparkles, X, ArrowUpDown, AlertTriangle, Flame, ThermometerSun, Snowflake, Filter, Award, List, Map, MapPin } from 'lucide-react';
+import { ArrowLeft, Play, Pause, CreditCard as Edit, BarChart3, Copy, Plus, Clock, Facebook, Instagram, Globe, MessageCircle, Target, TrendingUp, Users, Mail, Phone, Star, CheckCircle, AlertCircle, Activity, Sparkles, X, ArrowUpDown, AlertTriangle, Flame, ThermometerSun, Snowflake, Filter, Award, List, Map, MapPin, DollarSign } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import AICampaignScore from '../components/AICampaignScore';
 import AIAudienceBuilder from '../components/AIAudienceBuilder';
 import AIContentGenerator from '../components/AIContentGenerator';
 import SmartBudgetSplit from '../components/SmartBudgetSplit';
 import GeoHeatmap from '../components/GeoHeatmap';
+import CampaignROICard from '../components/CampaignROICard';
+import AddDealModal from '../components/AddDealModal';
 import { getPriorityColor, getPriorityBadgeColor, getPriorityLevel } from '../utils/leadPriorityCalculator';
 
 export default function AgentCampaignDetail() {
@@ -25,6 +27,8 @@ export default function AgentCampaignDetail() {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [showHotLeadsOnly, setShowHotLeadsOnly] = useState(false);
   const [leadsViewMode, setLeadsViewMode] = useState<'table' | 'map'>('table');
+  const [roiData, setRoiData] = useState<any>(null);
+  const [showAddDealModal, setShowAddDealModal] = useState(false);
   const [automationSettings, setAutomationSettings] = useState({
     autoFollowUp: true,
     whatsappAutoReply: false,
@@ -60,12 +64,13 @@ export default function AgentCampaignDetail() {
     try {
       console.log('Fetching campaign with ID:', id);
 
-      const [campaignRes, propertiesRes, leadsRes, analyticsRes, activitiesRes] = await Promise.all([
+      const [campaignRes, propertiesRes, leadsRes, analyticsRes, activitiesRes, roiRes] = await Promise.all([
         supabase.from('campaigns').select('*').eq('id', id).maybeSingle(),
         supabase.from('campaign_properties').select('*, projects(*)').eq('campaign_id', id),
         supabase.from('campaign_leads').select('*').eq('campaign_id', id).order('created_at', { ascending: false }),
         supabase.from('campaign_analytics').select('*').eq('campaign_id', id).order('date', { ascending: false }).limit(30),
-        supabase.from('campaign_activities').select('*').eq('campaign_id', id).order('created_at', { ascending: false }).limit(10)
+        supabase.from('campaign_activities').select('*').eq('campaign_id', id).order('created_at', { ascending: false }).limit(10),
+        supabase.from('campaign_roi_tracking').select('*').eq('campaign_id', id).maybeSingle()
       ]);
 
       console.log('Campaign response:', campaignRes);
@@ -100,6 +105,17 @@ export default function AgentCampaignDetail() {
         setAnalytics({ daily: analyticsRes.data, totals });
       }
       if (activitiesRes.data) setActivities(activitiesRes.data);
+
+      if (roiRes.data) {
+        setRoiData(roiRes.data);
+      } else {
+        const { data: newRoi } = await supabase
+          .from('campaign_roi_tracking')
+          .insert({ campaign_id: id })
+          .select()
+          .single();
+        if (newRoi) setRoiData(newRoi);
+      }
     } catch (error) {
       console.error('Error fetching campaign data:', error);
     } finally {
@@ -1286,7 +1302,26 @@ export default function AgentCampaignDetail() {
 
             {activeTab === 'analytics' && (
               <div>
-                <h3 className="font-semibold text-gray-900 text-lg mb-6">Performance Analytics</h3>
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="font-semibold text-gray-900 text-lg">Performance Analytics</h3>
+                  {roiData && (
+                    <button
+                      onClick={() => setShowAddDealModal(true)}
+                      className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                    >
+                      <DollarSign className="w-4 h-4" />
+                      Add Deal
+                    </button>
+                  )}
+                </div>
+
+                {roiData && (
+                  <div className="mb-8">
+                    <CampaignROICard roi={roiData} leadsCount={leads.length} />
+                  </div>
+                )}
+
+                <h3 className="font-semibold text-gray-900 text-lg mb-6 mt-8">Campaign Metrics</h3>
 
                 {(() => {
                   const channelBreakdown = analytics?.daily?.[0]?.channel_breakdown || {};
@@ -1794,6 +1829,15 @@ export default function AgentCampaignDetail() {
             </div>
           </div>
         </div>
+      )}
+
+      {showAddDealModal && (
+        <AddDealModal
+          campaignId={id!}
+          leads={leads}
+          onClose={() => setShowAddDealModal(false)}
+          onDealAdded={fetchCampaignData}
+        />
       )}
     </div>
   );

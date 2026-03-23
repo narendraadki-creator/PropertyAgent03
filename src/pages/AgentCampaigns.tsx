@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Campaign } from '../types';
 import { supabase } from '../lib/supabase';
-import { Plus, Filter, Search, Rocket, Database } from 'lucide-react';
+import { Plus, Filter, Search, Rocket, Database, Sparkles } from 'lucide-react';
 import { seedCampaignData } from '../utils/seedCampaignData';
 
 export default function AgentCampaigns() {
@@ -136,13 +136,22 @@ export default function AgentCampaigns() {
                   Add Sample Data
                 </button>
               )}
-              <button
-                onClick={() => navigate('/agent/campaigns/create')}
-                className="flex items-center gap-2 bg-white text-teal-600 px-6 py-3 rounded-lg font-medium hover:bg-teal-50 transition-colors shadow-lg"
-              >
-                <Plus className="w-5 h-5" />
-                Create Campaign
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => navigate('/agent/templates')}
+                  className="flex items-center gap-2 bg-white text-teal-600 px-6 py-3 rounded-lg font-medium hover:bg-teal-50 transition-colors shadow-lg border-2 border-teal-600"
+                >
+                  <Sparkles className="w-5 h-5" />
+                  Browse Templates
+                </button>
+                <button
+                  onClick={() => navigate('/agent/campaigns/create')}
+                  className="flex items-center gap-2 bg-white text-teal-600 px-6 py-3 rounded-lg font-medium hover:bg-teal-50 transition-colors shadow-lg"
+                >
+                  <Plus className="w-5 h-5" />
+                  Create Campaign
+                </button>
+              </div>
             </div>
           </div>
 

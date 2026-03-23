@@ -51,6 +51,7 @@ import AuthDebugPage from './pages/AuthDebugPage';
 import LoginPage from './pages/LoginPage';
 import TestPropertyRecommendations from './pages/TestPropertyRecommendations';
 import TestGeoHeatmap from './pages/TestGeoHeatmap';
+import CampaignTemplatesPage from './pages/CampaignTemplatesPage';
 
 function App() {
   return (
@@ -74,6 +75,7 @@ function App() {
           <Route path="/promotions" element={<PromotionsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/agent/campaigns" element={<AgentCampaigns />} />
+          <Route path="/agent/templates" element={<CampaignTemplatesPage />} />
           <Route path="/agent/campaigns/create" element={<AgentCreateCampaign />} />
           <Route path="/agent/campaigns/:id" element={<AgentCampaignDetail />} />
           <Route path="/agent/campaigns/:id/edit" element={<AgentEditCampaign />} />
