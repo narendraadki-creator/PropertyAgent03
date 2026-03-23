@@ -17,10 +17,28 @@ export default function AgentCampaignDetail() {
   const [analytics, setAnalytics] = useState<any>(null);
   const [activities, setActivities] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'overview' | 'leads' | 'analytics' | 'automation'>('overview');
+  const [showPropertyModal, setShowPropertyModal] = useState(false);
+  const [availableProperties, setAvailableProperties] = useState<any[]>([]);
 
   useEffect(() => {
     fetchCampaignData();
+    fetchAvailableProperties();
   }, [id]);
+
+  const fetchAvailableProperties = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        setAvailableProperties(data);
+      }
+    } catch (error) {
+      console.error('Error fetching properties:', error);
+    }
+  };
 
   const fetchCampaignData = async () => {
     try {
@@ -151,6 +169,41 @@ export default function AgentCampaignDetail() {
     return 'text-gray-600';
   };
 
+  const handleAddProperty = async (propertyId: string) => {
+    try {
+      const { error } = await supabase
+        .from('campaign_properties')
+        .insert({
+          campaign_id: id,
+          project_id: propertyId,
+          is_suggested: false
+        });
+
+      if (!error) {
+        await fetchCampaignData();
+        setShowPropertyModal(false);
+      }
+    } catch (error) {
+      console.error('Error adding property:', error);
+    }
+  };
+
+  const handleRemoveProperty = async (propertyId: string) => {
+    try {
+      const { error } = await supabase
+        .from('campaign_properties')
+        .delete()
+        .eq('campaign_id', id)
+        .eq('project_id', propertyId);
+
+      if (!error) {
+        await fetchCampaignData();
+      }
+    } catch (error) {
+      console.error('Error removing property:', error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -278,7 +331,10 @@ export default function AgentCampaignDetail() {
             <div className="bg-white rounded-lg border border-gray-200 p-4">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold text-gray-900">Selected Properties</h3>
-                <button className="flex items-center gap-2 text-sm text-teal-600 hover:text-teal-700">
+                <button
+                  onClick={() => setShowPropertyModal(true)}
+                  className="flex items-center gap-2 text-sm text-teal-600 hover:text-teal-700 transition-colors"
+                >
                   <Plus className="w-4 h-4" />
                   Add Property
                 </button>
@@ -642,6 +698,90 @@ export default function AgentCampaignDetail() {
           </div>
         </div>
       </div>
+
+      {showPropertyModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-gray-900">Add Properties to Campaign</h2>
+                <button
+                  onClick={() => setShowPropertyModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {availableProperties.map((property) => {
+                  const isSelected = properties.some(p => p.project_id === property.id);
+
+                  return (
+                    <div
+                      key={property.id}
+                      className={`border-2 rounded-lg overflow-hidden transition-all ${
+                        isSelected
+                          ? 'border-teal-600 bg-teal-50'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <img
+                        src={property.image || 'https://images.pexels.com/photos/1732414/pexels-photo-1732414.jpeg?auto=compress&cs=tinysrgb&w=800'}
+                        alt={property.name}
+                        className="w-full h-40 object-cover"
+                      />
+                      <div className="p-4">
+                        <h3 className="font-semibold text-gray-900 mb-1">{property.name}</h3>
+                        <p className="text-sm text-gray-600 mb-2">{property.location}</p>
+                        <p className="text-lg font-bold text-teal-600 mb-3">
+                          AED {property.price?.toLocaleString() || 'N/A'}
+                        </p>
+
+                        {isSelected ? (
+                          <button
+                            onClick={() => handleRemoveProperty(property.id)}
+                            className="w-full bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
+                          >
+                            Remove from Campaign
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleAddProperty(property.id)}
+                            className="w-full bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors text-sm font-medium"
+                          >
+                            Add to Campaign
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {availableProperties.length === 0 && (
+                <div className="text-center py-12">
+                  <p className="text-gray-600">No properties available</p>
+                  <p className="text-sm text-gray-500 mt-1">Create properties first to add them to campaigns</p>
+                </div>
+              )}
+            </div>
+
+            <div className="p-6 border-t border-gray-200 bg-gray-50">
+              <button
+                onClick={() => setShowPropertyModal(false)}
+                className="w-full bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors font-medium"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
