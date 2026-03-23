@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Pause, CreditCard as Edit, BarChart3, Copy, Plus, Clock, Facebook, Instagram, Globe, MessageCircle, Target, TrendingUp, Users, Mail, Phone, Star, CheckCircle, AlertCircle, Activity, Sparkles, X, ArrowUpDown, AlertTriangle, Flame, ThermometerSun, Snowflake, Filter } from 'lucide-react';
+import { ArrowLeft, Play, Pause, CreditCard as Edit, BarChart3, Copy, Plus, Clock, Facebook, Instagram, Globe, MessageCircle, Target, TrendingUp, Users, Mail, Phone, Star, CheckCircle, AlertCircle, Activity, Sparkles, X, ArrowUpDown, AlertTriangle, Flame, ThermometerSun, Snowflake, Filter, Award } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import AICampaignScore from '../components/AICampaignScore';
 import AIAudienceBuilder from '../components/AIAudienceBuilder';
@@ -39,10 +39,15 @@ export default function AgentCampaignDetail() {
       const { data, error } = await supabase
         .from('projects')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('trending_score', { ascending: false });
 
       if (!error && data) {
-        setAvailableProperties(data);
+        const sortedProperties = data.sort((a, b) => {
+          const scoreA = (a.conversion_rate || 0) * 2 + (a.trending_score || 0);
+          const scoreB = (b.conversion_rate || 0) * 2 + (b.trending_score || 0);
+          return scoreB - scoreA;
+        });
+        setAvailableProperties(sortedProperties);
       }
     } catch (error) {
       console.error('Error fetching properties:', error);
@@ -303,22 +308,52 @@ export default function AgentCampaignDetail() {
       prop => !properties.some(p => p.project_id === prop.id)
     );
 
-    return unselectedProperties.slice(0, 3).map(prop => ({
+    const scoredProperties = unselectedProperties.map(prop => ({
       ...prop,
-      aiScore: Math.floor(Math.random() * 30) + 70,
-      reason: getAIReason(prop)
+      aiScore: calculateRecommendationScore(prop),
+      reason: getSmartAIReason(prop)
     }));
+
+    return scoredProperties
+      .sort((a, b) => b.aiScore - a.aiScore)
+      .slice(0, 3);
   };
 
-  const getAIReason = (property: any) => {
-    const reasons = [
-      'High engagement in similar campaigns',
-      'Matches target audience profile',
-      'Trending in this location',
-      'Strong price-to-value ratio',
-      'High conversion potential'
-    ];
-    return reasons[Math.floor(Math.random() * reasons.length)];
+  const calculateRecommendationScore = (property: any) => {
+    let score = 50;
+
+    if (property.conversion_rate >= 15) score += 30;
+    else if (property.conversion_rate >= 10) score += 20;
+    else if (property.conversion_rate > 0) score += 10;
+
+    if (property.trending_score >= 60) score += 25;
+    else if (property.trending_score >= 40) score += 15;
+    else if (property.trending_score > 0) score += 5;
+
+    if (property.is_new_listing) score += 15;
+
+    if (property.leads_last_7_days > 5) score += 10;
+
+    return Math.min(100, score);
+  };
+
+  const getSmartAIReason = (property: any) => {
+    if (property.conversion_rate >= 15) {
+      return `${property.conversion_rate.toFixed(1)}% conversion rate - proven high performer`;
+    }
+    if (property.trending_score >= 60) {
+      return `Trending with ${property.leads_last_7_days || 0} leads in last 7 days`;
+    }
+    if (property.is_new_listing) {
+      return 'Fresh listing with high visibility potential';
+    }
+    if (property.total_leads > 10) {
+      return `Generated ${property.total_leads} total leads - strong track record`;
+    }
+    if (campaign?.campaign_type && property.location) {
+      return `Matches ${campaign.campaign_type} campaign in ${property.location}`;
+    }
+    return 'High potential based on market analysis';
   };
 
   const handleRemoveProperty = async (propertyId: string) => {
@@ -526,6 +561,24 @@ export default function AgentCampaignDetail() {
                           alt={prop.projects?.name}
                           className="w-full h-32 object-cover"
                         />
+                        {prop.projects?.conversion_rate >= 15 && (
+                          <div className="absolute top-2 left-2 px-2 py-1 bg-green-500 text-white text-xs font-bold rounded-full shadow-lg flex items-center gap-1">
+                            <Award className="w-3 h-3" />
+                            High Conversion
+                          </div>
+                        )}
+                        {prop.projects?.trending_score >= 60 && !prop.projects?.conversion_rate >= 15 && (
+                          <div className="absolute top-2 left-2 px-2 py-1 bg-orange-500 text-white text-xs font-bold rounded-full shadow-lg flex items-center gap-1">
+                            <TrendingUp className="w-3 h-3" />
+                            Trending
+                          </div>
+                        )}
+                        {prop.projects?.is_new_listing && !prop.projects?.conversion_rate >= 15 && !prop.projects?.trending_score >= 60 && (
+                          <div className="absolute top-2 left-2 px-2 py-1 bg-blue-500 text-white text-xs font-bold rounded-full shadow-lg flex items-center gap-1">
+                            <Sparkles className="w-3 h-3" />
+                            New Listing
+                          </div>
+                        )}
                         <button
                           onClick={() => handleRemoveProperty(prop.project_id)}
                           className="absolute top-2 right-2 bg-red-600 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700"
@@ -538,14 +591,26 @@ export default function AgentCampaignDetail() {
                         <h4 className="font-medium text-gray-900 mb-1">{prop.projects?.name}</h4>
                         <p className="text-sm text-gray-600 mb-2">{prop.projects?.location}</p>
                         <p className="text-lg font-bold text-teal-600">
-                          AED {prop.projects?.price?.toLocaleString()}
+                          {prop.projects?.price_range || 'Price on request'}
                         </p>
-                        {prop.is_suggested && (
-                          <span className="inline-flex items-center gap-1 text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full mt-2">
-                            <Star className="w-3 h-3" />
-                            AI Suggested
-                          </span>
-                        )}
+                        <div className="flex items-center gap-2 mt-2 flex-wrap">
+                          {prop.is_suggested && (
+                            <span className="inline-flex items-center gap-1 text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
+                              <Star className="w-3 h-3" />
+                              AI Suggested
+                            </span>
+                          )}
+                          {prop.projects?.conversion_rate > 0 && (
+                            <span className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded-full">
+                              {prop.projects.conversion_rate.toFixed(1)}% conv.
+                            </span>
+                          )}
+                          {prop.projects?.trending_score > 0 && (
+                            <span className="text-xs bg-orange-50 text-orange-700 px-2 py-1 rounded-full">
+                              {Math.round(prop.projects.trending_score)} trending
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -1550,7 +1615,7 @@ export default function AgentCampaignDetail() {
                       className={`border-2 rounded-lg overflow-hidden transition-all ${
                         isSelected
                           ? 'border-teal-600 bg-teal-50'
-                          : 'border-gray-200 hover:border-gray-300'
+                          : 'border-gray-200 hover:border-gray-300 hover:shadow-lg'
                       }`}
                     >
                       <div className="relative">
@@ -1559,8 +1624,26 @@ export default function AgentCampaignDetail() {
                           alt={property.name}
                           className="w-full h-40 object-cover"
                         />
+                        {property.conversion_rate >= 15 && (
+                          <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg shadow-green-500/50 animate-pulse">
+                            <Award className="w-3 h-3" />
+                            High Conversion
+                          </div>
+                        )}
+                        {property.trending_score >= 60 && property.conversion_rate < 15 && (
+                          <div className="absolute top-2 left-2 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg shadow-orange-500/50 animate-pulse">
+                            <TrendingUp className="w-3 h-3" />
+                            Trending
+                          </div>
+                        )}
+                        {property.is_new_listing && property.conversion_rate < 15 && property.trending_score < 60 && (
+                          <div className="absolute top-2 left-2 bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg shadow-blue-500/50 animate-pulse">
+                            <Sparkles className="w-3 h-3" />
+                            New Listing
+                          </div>
+                        )}
                         {isSelected && selectedProperty?.is_suggested && (
-                          <div className="absolute top-2 right-2 bg-purple-600 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+                          <div className="absolute top-2 right-2 bg-purple-600 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 shadow-lg">
                             <Star className="w-3 h-3 fill-current" />
                             AI Suggested
                           </div>
@@ -1569,9 +1652,29 @@ export default function AgentCampaignDetail() {
                       <div className="p-4">
                         <h3 className="font-semibold text-gray-900 mb-1">{property.name}</h3>
                         <p className="text-sm text-gray-600 mb-2">{property.location}</p>
-                        <p className="text-lg font-bold text-teal-600 mb-3">
-                          AED {property.price?.toLocaleString() || 'N/A'}
+                        <p className="text-lg font-bold text-teal-600 mb-2">
+                          {property.price_range || 'Price on request'}
                         </p>
+
+                        {(property.conversion_rate > 0 || property.trending_score > 0) && (
+                          <div className="flex items-center gap-2 mb-3 flex-wrap">
+                            {property.conversion_rate > 0 && (
+                              <span className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded-full font-medium">
+                                {property.conversion_rate.toFixed(1)}% conv.
+                              </span>
+                            )}
+                            {property.trending_score > 0 && (
+                              <span className="text-xs bg-orange-50 text-orange-700 px-2 py-1 rounded-full font-medium">
+                                {Math.round(property.trending_score)} trending
+                              </span>
+                            )}
+                            {property.total_leads > 0 && (
+                              <span className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full font-medium">
+                                {property.total_leads} leads
+                              </span>
+                            )}
+                          </div>
+                        )}
 
                         {isSelected ? (
                           <button
