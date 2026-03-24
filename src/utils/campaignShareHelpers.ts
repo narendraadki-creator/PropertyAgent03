@@ -5,6 +5,7 @@ export interface CampaignShareData {
   message: string;
   encodedMessage: string;
   shareUrl: string;
+  imageUrl?: string;
 }
 
 export type SharePlatform = 'whatsapp' | 'facebook' | 'instagram' | 'linkedin' | 'twitter' | 'email' | 'copy_link';
@@ -28,33 +29,20 @@ export function generateCampaignShareData(campaign: Campaign): CampaignShareData
   const baseUrl = window.location.origin;
   const shareUrl = `${baseUrl}/campaign/${campaign.id}`;
 
-  const location = campaign.description?.match(/📍\s*([^💰\n]+)/)?.[1]?.trim() ||
-                   (campaign.targetAudience?.toLowerCase().includes('bangalore') ? 'Bangalore, Whitefield' : 'Prime Location');
+  const contentFromTemplate = campaign.contentTemplate?.content || '';
+  const contentWithoutHashtags = contentFromTemplate.split('\n\n.\n.\n.\n')[0] || contentFromTemplate.split('#')[0] || contentFromTemplate;
 
-  const budget = campaign.budget ? `AED ${campaign.budget.toLocaleString()}` : 'Contact for Price';
+  const message = contentWithoutHashtags.trim() + '\n\n' + shareUrl;
 
-  const urgencyText = campaign.endDate
-    ? `⏰ Don't wait - Limited units at revised prices!`
-    : `⏰ Don't wait - Limited units at revised prices!`;
-
-  const ctaText = campaign.ctaText || '_Schedule a site visit today!_';
-
-  const message = `🏡 *${campaign.title}*
-
-${campaign.description || 'Great news! We\'ve revised our pricing to make your dream home more affordable.'}
-
-📍 Location: ${location}
-
-${urgencyText}
-
-${ctaText}`;
+  const imageUrl = campaign.creativeAssets?.projectImage || campaign.creativeAssets?.images?.[0] || '';
 
   const encodedMessage = encodeURIComponent(message);
 
   return {
     message,
     encodedMessage,
-    shareUrl
+    shareUrl,
+    imageUrl
   };
 }
 
