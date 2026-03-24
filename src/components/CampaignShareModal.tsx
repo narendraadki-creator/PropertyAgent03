@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { X, MessageCircle, Facebook, Instagram, Link, Check } from 'lucide-react';
-import { Campaign } from '../types';
-import { generateCampaignShareData, shareToWhatsApp, shareToFacebook, shareToInstagram, copyToClipboard } from '../utils/campaignShareHelpers';
+import { X, MessageCircle, Facebook, Instagram, Link, Check, Linkedin, Twitter, Mail } from 'lucide-react';
+import { Campaign, SocialPlatform } from '../types';
+import {
+  generateCampaignShareData,
+  shareToWhatsApp,
+  shareToFacebook,
+  shareToInstagram,
+  shareToLinkedIn,
+  shareToTwitter,
+  shareToEmail,
+  copyToClipboard
+} from '../utils/campaignShareHelpers';
 
 interface CampaignShareModalProps {
   campaign: Campaign;
@@ -9,8 +18,18 @@ interface CampaignShareModalProps {
   onClose: () => void;
 }
 
+interface PlatformConfig {
+  id: SocialPlatform;
+  name: string;
+  icon: React.ReactNode;
+  bgColor: string;
+  iconColor: string;
+  action: () => void;
+  showCopiedState?: boolean;
+}
+
 export default function CampaignShareModal({ campaign, isOpen, onClose }: CampaignShareModalProps) {
-  const [copiedType, setCopiedType] = useState<'link' | 'instagram' | null>(null);
+  const [copiedType, setCopiedType] = useState<SocialPlatform | 'copy_link' | null>(null);
   const shareData = generateCampaignShareData(campaign);
 
   useEffect(() => {
@@ -43,15 +62,80 @@ export default function CampaignShareModal({ campaign, isOpen, onClose }: Campai
     }
   };
 
+  const handleLinkedInShare = () => {
+    shareToLinkedIn(campaign.id, shareData.shareUrl);
+  };
+
+  const handleTwitterShare = () => {
+    shareToTwitter(campaign.id, shareData.message, shareData.shareUrl);
+  };
+
+  const handleEmailShare = () => {
+    shareToEmail(campaign.id, campaign.title, shareData.message);
+  };
+
   const handleCopyLink = async () => {
     try {
       await copyToClipboard(campaign.id, shareData.shareUrl);
-      setCopiedType('link');
+      setCopiedType('copy_link');
       setTimeout(() => setCopiedType(null), 3000);
     } catch (error) {
       console.error('Failed to copy:', error);
     }
   };
+
+  const platformConfigs: PlatformConfig[] = [
+    {
+      id: 'whatsapp',
+      name: 'WhatsApp',
+      icon: <MessageCircle className="w-6 h-6" />,
+      bgColor: 'bg-green-100',
+      iconColor: 'text-green-600',
+      action: handleWhatsAppShare
+    },
+    {
+      id: 'facebook',
+      name: 'Facebook',
+      icon: <Facebook className="w-6 h-6" />,
+      bgColor: 'bg-blue-100',
+      iconColor: 'text-blue-600',
+      action: handleFacebookShare
+    },
+    {
+      id: 'instagram',
+      name: 'Instagram',
+      icon: <Instagram className="w-6 h-6" />,
+      bgColor: 'bg-pink-100',
+      iconColor: 'text-pink-600',
+      action: handleInstagramShare,
+      showCopiedState: true
+    },
+    {
+      id: 'linkedin',
+      name: 'LinkedIn',
+      icon: <Linkedin className="w-6 h-6" />,
+      bgColor: 'bg-blue-100',
+      iconColor: 'text-blue-700',
+      action: handleLinkedInShare
+    },
+    {
+      id: 'twitter',
+      name: 'Twitter',
+      icon: <Twitter className="w-6 h-6" />,
+      bgColor: 'bg-sky-100',
+      iconColor: 'text-sky-600',
+      action: handleTwitterShare
+    }
+  ];
+
+  const availablePlatforms = campaign.targetPlatforms && campaign.targetPlatforms.length > 0
+    ? platformConfigs.filter(config => campaign.targetPlatforms.includes(config.id))
+    : platformConfigs;
+
+  if (availablePlatforms.length === 1 && !isOpen) {
+    availablePlatforms[0].action();
+    return null;
+  }
 
   if (!isOpen) return null;
 
@@ -80,49 +164,28 @@ export default function CampaignShareModal({ campaign, isOpen, onClose }: Campai
           </div>
 
           <div className="space-y-3">
-            <button
-              onClick={handleWhatsAppShare}
-              className="w-full flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
-            >
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                <MessageCircle className="w-6 h-6 text-green-600" />
-              </div>
-              <div className="flex-1 text-left">
-                <p className="font-medium text-gray-900">WhatsApp</p>
-                <p className="text-sm text-gray-500">Share via WhatsApp</p>
-              </div>
-            </button>
-
-            <button
-              onClick={handleFacebookShare}
-              className="w-full flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
-            >
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <Facebook className="w-6 h-6 text-blue-600" />
-              </div>
-              <div className="flex-1 text-left">
-                <p className="font-medium text-gray-900">Facebook</p>
-                <p className="text-sm text-gray-500">Share on Facebook</p>
-              </div>
-            </button>
-
-            <button
-              onClick={handleInstagramShare}
-              className="w-full flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
-            >
-              <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center">
-                <Instagram className="w-6 h-6 text-pink-600" />
-              </div>
-              <div className="flex-1 text-left">
-                <p className="font-medium text-gray-900">Instagram</p>
-                <p className="text-sm text-gray-500">
-                  {copiedType === 'instagram' ? 'Message copied!' : 'Copy message for Instagram'}
-                </p>
-              </div>
-              {copiedType === 'instagram' && (
-                <Check className="w-5 h-5 text-green-600" />
-              )}
-            </button>
+            {availablePlatforms.map((platform) => (
+              <button
+                key={platform.id}
+                onClick={platform.action}
+                className="w-full flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+              >
+                <div className={`w-12 h-12 ${platform.bgColor} rounded-full flex items-center justify-center ${platform.iconColor}`}>
+                  {platform.icon}
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="font-medium text-gray-900">{platform.name}</p>
+                  <p className="text-sm text-gray-500">
+                    {platform.showCopiedState && copiedType === platform.id
+                      ? 'Content copied. Paste on Instagram'
+                      : `Share ${platform.id === 'instagram' ? 'via' : 'on'} ${platform.name}`}
+                  </p>
+                </div>
+                {platform.showCopiedState && copiedType === platform.id && (
+                  <Check className="w-5 h-5 text-green-600" />
+                )}
+              </button>
+            ))}
 
             <button
               onClick={handleCopyLink}
@@ -134,10 +197,10 @@ export default function CampaignShareModal({ campaign, isOpen, onClose }: Campai
               <div className="flex-1 text-left">
                 <p className="font-medium text-gray-900">Copy Link</p>
                 <p className="text-sm text-gray-500">
-                  {copiedType === 'link' ? 'Link copied!' : 'Copy campaign link'}
+                  {copiedType === 'copy_link' ? 'Link copied!' : 'Copy campaign link'}
                 </p>
               </div>
-              {copiedType === 'link' && (
+              {copiedType === 'copy_link' && (
                 <Check className="w-5 h-5 text-green-600" />
               )}
             </button>

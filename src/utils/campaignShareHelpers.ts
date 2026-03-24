@@ -29,13 +29,17 @@ export function generateCampaignShareData(campaign: Campaign): CampaignShareData
   const shareUrl = `${baseUrl}/agent/campaigns/${campaign.id}`;
 
   const location = campaign.description?.match(/📍\s*([^💰\n]+)/)?.[1]?.trim() || 'Prime Location';
-  const price = campaign.budget ? `AED ${campaign.budget.toLocaleString()}` : 'Contact for Price';
+  const budget = campaign.budget ? `AED ${campaign.budget.toLocaleString()}` : 'Contact for Price';
+  const description = campaign.description || '';
 
   const message = `🏡 ${campaign.title}
-📍 ${location}
-💰 ${price}
 
-View Details:
+📍 ${location}
+💰 ${budget}
+
+${description}
+
+👉 View Details:
 ${shareUrl}`;
 
   const encodedMessage = encodeURIComponent(message);

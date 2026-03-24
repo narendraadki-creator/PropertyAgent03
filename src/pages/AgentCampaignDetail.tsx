@@ -10,6 +10,7 @@ import GeoHeatmap from '../components/GeoHeatmap';
 import CampaignROICard from '../components/CampaignROICard';
 import AddDealModal from '../components/AddDealModal';
 import { getPriorityColor, getPriorityBadgeColor, getPriorityLevel } from '../utils/leadPriorityCalculator';
+import { updateMetaTags, resetMetaTags } from '../utils/metaTags';
 
 export default function AgentCampaignDetail() {
   const { id } = useParams();
@@ -38,7 +39,17 @@ export default function AgentCampaignDetail() {
   useEffect(() => {
     fetchCampaignData();
     fetchAvailableProperties();
+
+    return () => {
+      resetMetaTags();
+    };
   }, [id]);
+
+  useEffect(() => {
+    if (campaign) {
+      updateMetaTags(campaign);
+    }
+  }, [campaign]);
 
   const fetchAvailableProperties = async () => {
     try {

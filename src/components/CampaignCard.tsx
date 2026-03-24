@@ -2,6 +2,15 @@ import { useState } from 'react';
 import { Campaign } from '../types';
 import { Calendar, BarChart3, Eye, Share2, CreditCard as EditIcon, Trash2, Share } from 'lucide-react';
 import CampaignShareModal from './CampaignShareModal';
+import {
+  generateCampaignShareData,
+  shareToWhatsApp,
+  shareToFacebook,
+  shareToInstagram,
+  shareToLinkedIn,
+  shareToTwitter,
+  copyToClipboard
+} from '../utils/campaignShareHelpers';
 
 interface CampaignCardProps {
   campaign: Campaign;
@@ -12,6 +21,39 @@ interface CampaignCardProps {
 
 export default function CampaignCard({ campaign, onEdit, onDelete, onView }: CampaignCardProps) {
   const [showShareModal, setShowShareModal] = useState(false);
+
+  const handleShareClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    if (campaign.targetPlatforms && campaign.targetPlatforms.length === 1) {
+      const platform = campaign.targetPlatforms[0];
+      const shareData = generateCampaignShareData(campaign);
+
+      switch (platform) {
+        case 'whatsapp':
+          shareToWhatsApp(campaign.id, shareData.encodedMessage);
+          break;
+        case 'facebook':
+          shareToFacebook(campaign.id, shareData.shareUrl);
+          break;
+        case 'instagram':
+          copyToClipboard(campaign.id, shareData.message).then(() => {
+            shareToInstagram(campaign.id);
+          });
+          break;
+        case 'linkedin':
+          shareToLinkedIn(campaign.id, shareData.shareUrl);
+          break;
+        case 'twitter':
+          shareToTwitter(campaign.id, shareData.message, shareData.shareUrl);
+          break;
+        default:
+          setShowShareModal(true);
+      }
+    } else {
+      setShowShareModal(true);
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -135,10 +177,7 @@ export default function CampaignCard({ campaign, onEdit, onDelete, onView }: Cam
             </button>
           )}
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowShareModal(true);
-            }}
+            onClick={handleShareClick}
             className="px-4 py-2.5 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors"
             title="Share Campaign"
           >
