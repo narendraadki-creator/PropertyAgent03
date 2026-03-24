@@ -39,9 +39,9 @@ export default function CampaignCard({ campaign, onEdit, onDelete, onView }: Cam
     return labels[type] || type;
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDateShort = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' });
+    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
   };
 
   return (
@@ -62,20 +62,27 @@ export default function CampaignCard({ campaign, onEdit, onDelete, onView }: Cam
           <p className="text-sm text-gray-600 line-clamp-2 mb-4">{campaign.description}</p>
         )}
 
+        {campaign.budget && (
+          <div className="flex items-center justify-between text-sm mb-2">
+            <span className="text-gray-600">Budget:</span>
+            <span className="font-semibold text-teal-600">AED {campaign.budget.toLocaleString()}</span>
+          </div>
+        )}
+
         {campaign.startDate && (
-          <div className="flex items-center text-sm text-gray-600 mb-3">
-            <Calendar className="w-4 h-4 mr-2 text-gray-400" />
-            <span>
-              {formatDate(campaign.startDate)}
-              {campaign.endDate && ` - ${formatDate(campaign.endDate)}`}
+          <div className="flex items-center justify-between text-sm mb-4">
+            <span className="text-gray-600">Duration:</span>
+            <span className="text-gray-900">
+              {formatDateShort(campaign.startDate)}
+              {campaign.endDate && ` -${formatDateShort(campaign.endDate)}`}
             </span>
           </div>
         )}
 
         {campaign.targetPlatforms && campaign.targetPlatforms.length > 0 && (
           <div className="flex items-center gap-2 mb-4">
-            <Share2 className="w-4 h-4 text-gray-400" />
-            <div className="flex flex-wrap gap-1">
+            <span className="text-sm text-gray-600">Platforms:</span>
+            <div className="flex flex-wrap gap-2">
               {campaign.targetPlatforms.map((platform) => (
                 <span
                   key={platform}
