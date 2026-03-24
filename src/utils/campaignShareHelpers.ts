@@ -26,7 +26,7 @@ export async function trackShareEvent(campaignId: string, platform: SharePlatfor
 
 export function generateCampaignShareData(campaign: Campaign): CampaignShareData {
   const baseUrl = window.location.origin;
-  const shareUrl = `${baseUrl}/agent/campaigns/${campaign.id}`;
+  const shareUrl = `${baseUrl}/campaign/${campaign.id}`;
 
   const location = campaign.description?.match(/📍\s*([^💰\n]+)/)?.[1]?.trim() || 'Prime Location';
   const budget = campaign.budget ? `AED ${campaign.budget.toLocaleString()}` : 'Contact for Price';
@@ -51,8 +51,11 @@ ${shareUrl}`;
   };
 }
 
-export function shareToWhatsApp(campaignId: string, message: string): void {
+export function shareToWhatsApp(campaignId: string, encodedMessage?: string): void {
   trackShareEvent(campaignId, 'whatsapp');
+  const baseUrl = window.location.origin;
+  const campaignUrl = `${baseUrl}/campaign/${campaignId}`;
+  const message = encodedMessage || encodeURIComponent(campaignUrl);
   const url = `https://wa.me/?text=${message}`;
   window.open(url, '_blank');
 }
@@ -74,10 +77,12 @@ export function shareToLinkedIn(campaignId: string, shareUrl: string): void {
   window.open(url, '_blank');
 }
 
-export function shareToTwitter(campaignId: string, message: string, shareUrl: string): void {
+export function shareToTwitter(campaignId: string, message?: string, shareUrl?: string): void {
   trackShareEvent(campaignId, 'twitter');
-  const tweetText = `${message}\n${shareUrl}`;
-  const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+  const baseUrl = window.location.origin;
+  const campaignUrl = shareUrl || `${baseUrl}/campaign/${campaignId}`;
+  const tweetText = message ? `${message}` : campaignUrl;
+  const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(campaignUrl)}`;
   window.open(url, '_blank');
 }
 

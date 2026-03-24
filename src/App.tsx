@@ -52,6 +52,7 @@ import LoginPage from './pages/LoginPage';
 import TestPropertyRecommendations from './pages/TestPropertyRecommendations';
 import TestGeoHeatmap from './pages/TestGeoHeatmap';
 import CampaignTemplatesPage from './pages/CampaignTemplatesPage';
+import CampaignRedirect from './pages/CampaignRedirect';
 
 function App() {
   return (
@@ -60,6 +61,9 @@ function App() {
         <Routes>
           {/* Auth Routes */}
           <Route path="/login" element={<LoginPage />} />
+
+          {/* Campaign Share Route */}
+          <Route path="/campaign/:id" element={<CampaignRedirect />} />
 
           {/* Agent Routes */}
           <Route path="/" element={<LandingPage />} />
