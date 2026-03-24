@@ -28,21 +28,8 @@ export function generateCampaignShareData(campaign: Campaign): CampaignShareData
   const baseUrl = window.location.origin;
   const shareUrl = `${baseUrl}/campaign/${campaign.id}`;
 
-  const location = campaign.description?.match(/📍\s*([^💰\n]+)/)?.[1]?.trim() || 'Prime Location';
-  const budget = campaign.budget ? `AED ${campaign.budget.toLocaleString()}` : 'Contact for Price';
-  const description = campaign.description || '';
-
-  const message = `🏡 ${campaign.title}
-
-📍 ${location}
-💰 ${budget}
-
-${description}
-
-👉 View Details:
-${shareUrl}`;
-
-  const encodedMessage = encodeURIComponent(message);
+  const message = shareUrl;
+  const encodedMessage = encodeURIComponent(shareUrl);
 
   return {
     message,
@@ -55,7 +42,7 @@ export function shareToWhatsApp(campaignId: string, encodedMessage?: string): vo
   trackShareEvent(campaignId, 'whatsapp');
   const baseUrl = window.location.origin;
   const campaignUrl = `${baseUrl}/campaign/${campaignId}`;
-  const message = encodedMessage || encodeURIComponent(campaignUrl);
+  const message = encodeURIComponent(campaignUrl);
   const url = `https://wa.me/?text=${message}`;
   window.open(url, '_blank');
 }
@@ -68,7 +55,10 @@ export function shareToFacebook(campaignId: string, shareUrl: string): void {
 
 export function shareToInstagram(campaignId: string): void {
   trackShareEvent(campaignId, 'instagram');
-  alert('Please share via Instagram app by saving the campaign image and posting it.');
+  const baseUrl = window.location.origin;
+  const campaignUrl = `${baseUrl}/campaign/${campaignId}`;
+  navigator.clipboard.writeText(campaignUrl);
+  alert('Campaign link copied! Share it via Instagram app.');
 }
 
 export function shareToLinkedIn(campaignId: string, shareUrl: string): void {
@@ -80,14 +70,16 @@ export function shareToLinkedIn(campaignId: string, shareUrl: string): void {
 export function shareToTwitter(campaignId: string, message?: string, shareUrl?: string): void {
   trackShareEvent(campaignId, 'twitter');
   const baseUrl = window.location.origin;
-  const campaignUrl = shareUrl || `${baseUrl}/campaign/${campaignId}`;
-  const tweetText = message ? `${message}` : campaignUrl;
-  const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(campaignUrl)}`;
+  const campaignUrl = `${baseUrl}/campaign/${campaignId}`;
+  const url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(campaignUrl)}`;
   window.open(url, '_blank');
 }
 
-export function shareToEmail(campaignId: string, subject: string, body: string): void {
+export function shareToEmail(campaignId: string, subject: string): void {
   trackShareEvent(campaignId, 'email');
+  const baseUrl = window.location.origin;
+  const campaignUrl = `${baseUrl}/campaign/${campaignId}`;
+  const body = `Check out this property campaign:\n\n${campaignUrl}`;
   const url = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   window.location.href = url;
 }

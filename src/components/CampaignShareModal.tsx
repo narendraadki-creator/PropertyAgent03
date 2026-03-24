@@ -53,7 +53,7 @@ export default function CampaignShareModal({ campaign, isOpen, onClose }: Campai
 
   const handleInstagramShare = async () => {
     try {
-      await copyToClipboard(campaign.id, shareData.message);
+      await copyToClipboard(campaign.id, shareData.shareUrl);
       shareToInstagram(campaign.id);
       setCopiedType('instagram');
       setTimeout(() => setCopiedType(null), 3000);
@@ -71,7 +71,7 @@ export default function CampaignShareModal({ campaign, isOpen, onClose }: Campai
   };
 
   const handleEmailShare = () => {
-    shareToEmail(campaign.id, campaign.title, shareData.message);
+    shareToEmail(campaign.id, campaign.title);
   };
 
   const handleCopyLink = async () => {
@@ -206,9 +206,30 @@ export default function CampaignShareModal({ campaign, isOpen, onClose }: Campai
             </button>
           </div>
 
-          <div className="mt-6 p-4 bg-gray-50 rounded-xl">
-            <p className="text-xs font-medium text-gray-500 mb-2">Preview:</p>
-            <p className="text-sm text-gray-700 whitespace-pre-line">{shareData.message}</p>
+          <div className="mt-6">
+            <p className="text-xs font-medium text-gray-500 mb-3">Link Preview:</p>
+            <div className="border border-gray-200 rounded-xl overflow-hidden bg-white">
+              {campaign.creativeAssets?.projectImage && (
+                <div className="w-full h-48 bg-gray-100">
+                  <img
+                    src={campaign.creativeAssets.projectImage}
+                    alt={campaign.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+              <div className="p-4">
+                <h4 className="font-semibold text-gray-900 mb-2">{campaign.title}</h4>
+                <p className="text-sm text-gray-600 line-clamp-3 whitespace-pre-line">
+                  {campaign.description}
+                  {'\n\n'}
+                  📍 {campaign.description?.match(/📍\s*([^💰\n]+)/)?.[1]?.trim() || 'Prime Location'}
+                  {'\n'}
+                  💰 {campaign.budget ? `AED ${campaign.budget.toLocaleString()}` : 'Contact for Price'}
+                </p>
+                <p className="text-xs text-gray-400 mt-2">{shareData.shareUrl}</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
