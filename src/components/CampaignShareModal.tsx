@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, MessageCircle, Facebook, Instagram, Link, Check } from 'lucide-react';
 import { Campaign } from '../types';
-import { generateCampaignShareData, shareToWhatsApp, shareToFacebook, copyToClipboard } from '../utils/campaignShareHelpers';
+import { generateCampaignShareData, shareToWhatsApp, shareToFacebook, shareToInstagram, copyToClipboard } from '../utils/campaignShareHelpers';
 
 interface CampaignShareModalProps {
   campaign: Campaign;
@@ -25,16 +25,17 @@ export default function CampaignShareModal({ campaign, isOpen, onClose }: Campai
   }, [isOpen]);
 
   const handleWhatsAppShare = () => {
-    shareToWhatsApp(shareData.encodedMessage);
+    shareToWhatsApp(campaign.id, shareData.encodedMessage);
   };
 
   const handleFacebookShare = () => {
-    shareToFacebook(shareData.shareUrl);
+    shareToFacebook(campaign.id, shareData.shareUrl);
   };
 
   const handleInstagramShare = async () => {
     try {
-      await copyToClipboard(shareData.message);
+      await copyToClipboard(campaign.id, shareData.message);
+      shareToInstagram(campaign.id);
       setCopiedType('instagram');
       setTimeout(() => setCopiedType(null), 3000);
     } catch (error) {
@@ -44,7 +45,7 @@ export default function CampaignShareModal({ campaign, isOpen, onClose }: Campai
 
   const handleCopyLink = async () => {
     try {
-      await copyToClipboard(shareData.shareUrl);
+      await copyToClipboard(campaign.id, shareData.shareUrl);
       setCopiedType('link');
       setTimeout(() => setCopiedType(null), 3000);
     } catch (error) {

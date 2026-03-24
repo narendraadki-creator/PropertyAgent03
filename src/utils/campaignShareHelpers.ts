@@ -1,9 +1,27 @@
 import { Campaign } from '../types';
+import { supabase } from '../lib/supabase';
 
 export interface CampaignShareData {
   message: string;
   encodedMessage: string;
   shareUrl: string;
+}
+
+export type SharePlatform = 'whatsapp' | 'facebook' | 'instagram' | 'linkedin' | 'twitter' | 'email' | 'copy_link';
+
+export async function trackShareEvent(campaignId: string, platform: SharePlatform): Promise<void> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    await supabase.from('campaign_share_events').insert({
+      campaign_id: campaignId,
+      platform,
+      shared_by: user?.id || null,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error tracking share event:', error);
+  }
 }
 
 export function generateCampaignShareData(campaign: Campaign): CampaignShareData {
@@ -29,16 +47,43 @@ ${shareUrl}`;
   };
 }
 
-export function shareToWhatsApp(message: string): void {
+export function shareToWhatsApp(campaignId: string, message: string): void {
+  trackShareEvent(campaignId, 'whatsapp');
   const url = `https://wa.me/?text=${message}`;
   window.open(url, '_blank');
 }
 
-export function shareToFacebook(shareUrl: string): void {
+export function shareToFacebook(campaignId: string, shareUrl: string): void {
+  trackShareEvent(campaignId, 'facebook');
   const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
   window.open(url, '_blank');
 }
 
-export function copyToClipboard(text: string): Promise<void> {
+export function shareToInstagram(campaignId: string): void {
+  trackShareEvent(campaignId, 'instagram');
+  alert('Please share via Instagram app by saving the campaign image and posting it.');
+}
+
+export function shareToLinkedIn(campaignId: string, shareUrl: string): void {
+  trackShareEvent(campaignId, 'linkedin');
+  const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+  window.open(url, '_blank');
+}
+
+export function shareToTwitter(campaignId: string, message: string, shareUrl: string): void {
+  trackShareEvent(campaignId, 'twitter');
+  const tweetText = `${message}\n${shareUrl}`;
+  const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+  window.open(url, '_blank');
+}
+
+export function shareToEmail(campaignId: string, subject: string, body: string): void {
+  trackShareEvent(campaignId, 'email');
+  const url = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.location.href = url;
+}
+
+export async function copyToClipboard(campaignId: string, text: string): Promise<void> {
+  await trackShareEvent(campaignId, 'copy_link');
   return navigator.clipboard.writeText(text);
 }
