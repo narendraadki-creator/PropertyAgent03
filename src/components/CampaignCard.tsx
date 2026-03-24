@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Campaign } from '../types';
-import { Calendar, BarChart3, Eye, Share2, CreditCard as Edit, Trash2 } from 'lucide-react';
+import { Calendar, BarChart3, Eye, Share2, CreditCard as Edit, Trash2, Share } from 'lucide-react';
+import CampaignShareModal from './CampaignShareModal';
 
 interface CampaignCardProps {
   campaign: Campaign;
@@ -9,6 +11,7 @@ interface CampaignCardProps {
 }
 
 export default function CampaignCard({ campaign, onEdit, onDelete, onView }: CampaignCardProps) {
+  const [showShareModal, setShowShareModal] = useState(false);
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
@@ -122,6 +125,13 @@ export default function CampaignCard({ campaign, onEdit, onDelete, onView }: Cam
               View Details
             </button>
           )}
+          <button
+            onClick={() => setShowShareModal(true)}
+            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            title="Share Campaign"
+          >
+            <Share className="w-4 h-4" />
+          </button>
           {onEdit && (
             <button
               onClick={() => onEdit(campaign)}
@@ -140,6 +150,12 @@ export default function CampaignCard({ campaign, onEdit, onDelete, onView }: Cam
           )}
         </div>
       </div>
+
+      <CampaignShareModal
+        campaign={campaign}
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+      />
     </div>
   );
 }
