@@ -207,27 +207,20 @@ export default function CampaignShareModal({ campaign, isOpen, onClose }: Campai
           </div>
 
           <div className="mt-6">
-            <p className="text-xs font-medium text-gray-500 mb-3">Link Preview:</p>
-            <div className="border border-gray-200 rounded-xl overflow-hidden bg-white">
-              {campaign.creativeAssets?.projectImage && (
-                <div className="w-full h-48 bg-gray-100">
-                  <img
-                    src={campaign.creativeAssets.projectImage}
-                    alt={campaign.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
-              <div className="p-4">
-                <h4 className="font-semibold text-gray-900 mb-2">{campaign.title}</h4>
-                <p className="text-sm text-gray-600 line-clamp-3 whitespace-pre-line">
-                  {campaign.description}
-                  {'\n\n'}
-                  📍 {campaign.description?.match(/📍\s*([^💰\n]+)/)?.[1]?.trim() || 'Prime Location'}
-                  {'\n'}
-                  💰 {campaign.budget ? `AED ${campaign.budget.toLocaleString()}` : 'Contact for Price'}
-                </p>
-                <p className="text-xs text-gray-400 mt-2">{shareData.shareUrl}</p>
+            <p className="text-xs font-medium text-gray-500 mb-3">WhatsApp Preview:</p>
+            <div className="bg-gradient-to-b from-teal-100 to-teal-50 p-4 rounded-lg">
+              <div className="bg-white rounded-lg p-3 shadow-sm max-w-md">
+                <p className="text-sm whitespace-pre-wrap text-gray-900">{shareData.message}</p>
+                {campaign.creativeAssets?.projectImage && (
+                  <div className="mt-2 rounded-lg overflow-hidden">
+                    <img
+                      src={campaign.creativeAssets.projectImage}
+                      alt={campaign.title}
+                      className="w-full h-auto object-cover"
+                    />
+                  </div>
+                )}
+                <p className="text-xs text-gray-500 text-right mt-1">Just now</p>
               </div>
             </div>
           </div>

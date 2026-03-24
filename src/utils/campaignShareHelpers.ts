@@ -28,8 +28,28 @@ export function generateCampaignShareData(campaign: Campaign): CampaignShareData
   const baseUrl = window.location.origin;
   const shareUrl = `${baseUrl}/campaign/${campaign.id}`;
 
-  const message = shareUrl;
-  const encodedMessage = encodeURIComponent(shareUrl);
+  const location = campaign.description?.match(/📍\s*([^💰\n]+)/)?.[1]?.trim() ||
+                   (campaign.targetAudience?.toLowerCase().includes('bangalore') ? 'Bangalore, Whitefield' : 'Prime Location');
+
+  const budget = campaign.budget ? `AED ${campaign.budget.toLocaleString()}` : 'Contact for Price';
+
+  const urgencyText = campaign.endDate
+    ? `⏰ Don't wait - Limited units at revised prices!`
+    : `⏰ Don't wait - Limited units at revised prices!`;
+
+  const ctaText = campaign.ctaText || '_Schedule a site visit today!_';
+
+  const message = `🏡 *${campaign.title}*
+
+${campaign.description || 'Great news! We\'ve revised our pricing to make your dream home more affordable.'}
+
+📍 Location: ${location}
+
+${urgencyText}
+
+${ctaText}`;
+
+  const encodedMessage = encodeURIComponent(message);
 
   return {
     message,
@@ -40,9 +60,7 @@ export function generateCampaignShareData(campaign: Campaign): CampaignShareData
 
 export function shareToWhatsApp(campaignId: string, encodedMessage?: string): void {
   trackShareEvent(campaignId, 'whatsapp');
-  const baseUrl = window.location.origin;
-  const campaignUrl = `${baseUrl}/campaign/${campaignId}`;
-  const message = encodeURIComponent(campaignUrl);
+  const message = encodedMessage || '';
   const url = `https://wa.me/?text=${message}`;
   window.open(url, '_blank');
 }
