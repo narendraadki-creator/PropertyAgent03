@@ -25,6 +25,8 @@ export async function trackShareEvent(campaignId: string, platform: SharePlatfor
   }
 }
 
+const DEFAULT_CAMPAIGN_IMAGE = 'https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=1200';
+
 export function generateCampaignShareData(campaign: Campaign): CampaignShareData {
   const baseUrl = window.location.origin;
   const shareUrl = `${baseUrl}/campaign/${campaign.id}`;
@@ -34,7 +36,7 @@ export function generateCampaignShareData(campaign: Campaign): CampaignShareData
 
   const message = contentWithoutHashtags.trim() + '\n\n' + shareUrl;
 
-  const imageUrl = campaign.creativeAssets?.projectImage || campaign.creativeAssets?.images?.[0] || '';
+  const imageUrl = campaign.creativeAssets?.projectImage || campaign.creativeAssets?.images?.[0] || DEFAULT_CAMPAIGN_IMAGE;
 
   const encodedMessage = encodeURIComponent(message);
 

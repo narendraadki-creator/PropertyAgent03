@@ -1,9 +1,11 @@
 import { Campaign } from '../types';
 
+const DEFAULT_CAMPAIGN_IMAGE = 'https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=1200';
+
 export function updateMetaTags(campaign: Campaign): void {
   const title = campaign.title;
   const description = campaign.description || `${campaign.title} - View campaign details`;
-  const imageUrl = campaign.creativeAssets?.projectImage || campaign.creativeAssets?.images?.[0] || '';
+  const imageUrl = campaign.creativeAssets?.projectImage || campaign.creativeAssets?.images?.[0] || DEFAULT_CAMPAIGN_IMAGE;
   const url = `${window.location.origin}/agent/campaigns/${campaign.id}`;
 
   document.title = title;

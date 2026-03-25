@@ -1,6 +1,8 @@
 import { SocialPlatform } from '../types';
 import { Facebook, Twitter, Linkedin, MessageCircle, Instagram } from 'lucide-react';
 
+const DEFAULT_CAMPAIGN_IMAGE = 'https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=1200';
+
 interface SocialMediaPreviewProps {
   platform: SocialPlatform;
   content: string;
@@ -9,6 +11,7 @@ interface SocialMediaPreviewProps {
 }
 
 export default function SocialMediaPreview({ platform, content, imageUrl, projectName }: SocialMediaPreviewProps) {
+  const displayImage = imageUrl || DEFAULT_CAMPAIGN_IMAGE;
   const getPlatformIcon = () => {
     switch (platform) {
       case 'facebook':
@@ -55,11 +58,9 @@ export default function SocialMediaPreview({ platform, content, imageUrl, projec
             <div className="p-3">
               <p className="text-sm whitespace-pre-wrap">{content}</p>
             </div>
-            {imageUrl && (
-              <div className="w-full">
-                <img src={imageUrl} alt="Preview" className="w-full h-auto object-cover" />
-              </div>
-            )}
+            <div className="w-full">
+              <img src={displayImage} alt="Preview" className="w-full h-auto object-cover" />
+            </div>
             <div className="p-3 border-t border-gray-200 flex gap-4 text-gray-500 text-sm">
               <button className="flex-1 hover:bg-gray-100 py-1 rounded">Like</button>
               <button className="flex-1 hover:bg-gray-100 py-1 rounded">Comment</button>
@@ -112,11 +113,9 @@ export default function SocialMediaPreview({ platform, content, imageUrl, projec
             <div className="p-3">
               <p className="text-sm whitespace-pre-wrap">{content}</p>
             </div>
-            {imageUrl && (
-              <div className="w-full">
-                <img src={imageUrl} alt="Preview" className="w-full h-auto object-cover" />
-              </div>
-            )}
+            <div className="w-full">
+              <img src={displayImage} alt="Preview" className="w-full h-auto object-cover" />
+            </div>
             <div className="p-3 border-t border-gray-200 flex gap-4 text-gray-600 text-sm">
               <button className="hover:text-blue-600">Like</button>
               <button className="hover:text-blue-600">Comment</button>
