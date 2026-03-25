@@ -320,7 +320,7 @@ export default function AgentCreateCampaign() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Budget (AED)
+                  Budget (AED) <span className="text-gray-500 text-xs font-normal">(Optional)</span>
                 </label>
                 <input
                   type="number"
@@ -329,6 +329,16 @@ export default function AgentCreateCampaign() {
                   placeholder="e.g., 50000"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                 />
+                {formData.targetPlatforms.length > 0 && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    💡 Recommended budget: AED {(formData.targetPlatforms.length * 10000).toLocaleString()} - {(formData.targetPlatforms.length * 25000).toLocaleString()} based on {formData.targetPlatforms.length} platform{formData.targetPlatforms.length > 1 ? 's' : ''}
+                  </p>
+                )}
+                {!formData.budget && (
+                  <p className="text-xs text-amber-600 mt-2">
+                    ⚠️ Without a budget, budget optimization and ROI tracking features will be limited
+                  </p>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">

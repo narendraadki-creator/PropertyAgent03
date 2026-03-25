@@ -702,14 +702,42 @@ export default function AgentCampaignDetail() {
           </div>
 
           <div className="space-y-6">
-            <SmartBudgetSplit
-              totalBudget={campaign.budget || 10000}
-              distribution={campaign.channel_budget_split || { facebook: 2500, instagram: 4000, google: 2000, whatsapp: 1500 }}
-              onChange={async (distribution) => {
-                setCampaign({ ...campaign, channel_budget_split: distribution });
-                await supabase.from('campaigns').update({ channel_budget_split: distribution }).eq('id', id);
-              }}
-            />
+            {campaign.budget && campaign.budget > 0 ? (
+              <SmartBudgetSplit
+                totalBudget={campaign.budget}
+                distribution={campaign.channel_budget_split || { facebook: 2500, instagram: 4000, google: 2000, whatsapp: 1500 }}
+                onChange={async (distribution) => {
+                  setCampaign({ ...campaign, channel_budget_split: distribution });
+                  await supabase.from('campaigns').update({ channel_budget_split: distribution }).eq('id', id);
+                }}
+              />
+            ) : (
+              <div className="bg-white rounded-lg border border-amber-200 p-6">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                    <DollarSign className="w-5 h-5 text-amber-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900 mb-1">Budget Not Set</h3>
+                    <p className="text-sm text-gray-600 mb-3">
+                      Performance insights may be limited without a budget. Setting a budget enables:
+                    </p>
+                    <ul className="text-sm text-gray-600 space-y-1 mb-4">
+                      <li>• Budget allocation across channels</li>
+                      <li>• Auto-optimization recommendations</li>
+                      <li>• ROI tracking and analysis</li>
+                      <li>• Cost per lead metrics</li>
+                    </ul>
+                    <button
+                      onClick={() => navigate(`/agent/campaigns/${id}/edit`)}
+                      className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors text-sm font-medium"
+                    >
+                      Add Budget
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="bg-white rounded-lg border border-gray-200 p-4">
               <h3 className="font-semibold text-gray-900 mb-4">Performance Overview</h3>
@@ -1329,11 +1357,25 @@ export default function AgentCampaignDetail() {
                   )}
                 </div>
 
-                {roiData && (
+                {campaign.budget && campaign.budget > 0 && roiData ? (
                   <div className="mb-8">
                     <CampaignROICard roi={roiData} leadsCount={leads.length} />
                   </div>
-                )}
+                ) : !campaign.budget || campaign.budget === 0 ? (
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 mb-8">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                        <DollarSign className="w-4 h-4 text-amber-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-1">ROI Tracking Unavailable</h4>
+                        <p className="text-sm text-gray-600">
+                          Set a budget to enable ROI tracking and cost-per-lead analysis.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
 
                 <h3 className="font-semibold text-gray-900 text-lg mb-6 mt-8">Campaign Metrics</h3>
 
