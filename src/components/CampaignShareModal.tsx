@@ -12,6 +12,8 @@ import {
   copyToClipboard
 } from '../utils/campaignShareHelpers';
 
+const DEFAULT_CAMPAIGN_IMAGE = 'https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=1200';
+
 interface CampaignShareModalProps {
   campaign: Campaign;
   isOpen: boolean;
@@ -132,11 +134,6 @@ export default function CampaignShareModal({ campaign, isOpen, onClose }: Campai
     ? platformConfigs.filter(config => campaign.targetPlatforms.includes(config.id))
     : platformConfigs;
 
-  if (availablePlatforms.length === 1 && !isOpen) {
-    availablePlatforms[0].action();
-    return null;
-  }
-
   if (!isOpen) return null;
 
   return (
@@ -211,15 +208,13 @@ export default function CampaignShareModal({ campaign, isOpen, onClose }: Campai
             <div className="bg-gradient-to-b from-teal-100 to-teal-50 p-4 rounded-lg">
               <div className="bg-white rounded-lg p-3 shadow-sm max-w-md">
                 <p className="text-sm whitespace-pre-wrap text-gray-900">{shareData.message}</p>
-                {campaign.creativeAssets?.projectImage && (
-                  <div className="mt-2 rounded-lg overflow-hidden">
-                    <img
-                      src={campaign.creativeAssets.projectImage}
-                      alt={campaign.title}
-                      className="w-full h-auto object-cover"
-                    />
-                  </div>
-                )}
+                <div className="mt-2 rounded-lg overflow-hidden">
+                  <img
+                    src={shareData.imageUrl || DEFAULT_CAMPAIGN_IMAGE}
+                    alt={campaign.title}
+                    className="w-full h-auto object-cover"
+                  />
+                </div>
                 <p className="text-xs text-gray-500 text-right mt-1">Just now</p>
               </div>
             </div>
