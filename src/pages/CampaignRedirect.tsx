@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 
+const DEFAULT_CAMPAIGN_IMAGE = 'https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=1200';
+
 function updateOrCreateMetaTag(property: string, content: string, attributeName: string = 'property'): void {
   if (!content) return;
 
@@ -51,7 +53,7 @@ export default function CampaignRedirect() {
           return;
         }
 
-        const propertyImage = campaign.project?.image || campaign.creative_assets?.project_image || campaign.creative_assets?.images?.[0] || '';
+        const propertyImage = campaign.project?.image || campaign.creative_assets?.project_image || campaign.creative_assets?.images?.[0] || DEFAULT_CAMPAIGN_IMAGE;
         const location = campaign.project?.location || 'Prime Location';
         const budget = campaign.budget ? `AED ${campaign.budget.toLocaleString()}` : 'Contact for Price';
         const campaignUrl = `${window.location.origin}/campaign/${campaign.id}`;
