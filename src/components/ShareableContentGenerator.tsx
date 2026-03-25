@@ -71,13 +71,18 @@ export default function ShareableContentGenerator({
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
           Generate Campaign Content
         </h3>
-        <div className="bg-teal-50 border border-teal-200 rounded-lg p-4 mb-4">
-          <p className="text-sm text-teal-800">
+        <div className={`border rounded-lg p-4 mb-4 ${project.name ? 'bg-teal-50 border-teal-200' : 'bg-amber-50 border-amber-200'}`}>
+          <p className={`text-sm ${project.name ? 'text-teal-800' : 'text-amber-800'}`}>
             <strong>Campaign Type:</strong> {getCampaignTypeLabel(campaignType)}
           </p>
-          <p className="text-sm text-teal-800 mt-1">
-            <strong>Project:</strong> {project.name || 'Not specified'}
+          <p className={`text-sm mt-1 ${project.name ? 'text-teal-800' : 'text-amber-800'}`}>
+            <strong>Property:</strong> {project.name || 'Not selected - Using generic content'}
           </p>
+          {!project.name && (
+            <p className="text-xs text-amber-700 mt-2">
+              💡 Select a property for richer content with specific details, pricing, and location information.
+            </p>
+          )}
         </div>
       </div>
 

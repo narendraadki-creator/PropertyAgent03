@@ -648,15 +648,31 @@ export default function AgentCampaignDetail() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8">
-                  <p className="text-gray-500 mb-2">No properties selected yet</p>
-                  <button
-                    onClick={() => setShowPropertyModal(true)}
-                    className="inline-flex items-center gap-2 text-sm text-teal-600 hover:text-teal-700"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Add your first property
-                  </button>
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-6">
+                  <div className="text-center">
+                    <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <AlertTriangle className="w-6 h-6 text-amber-600" />
+                    </div>
+                    <h4 className="font-semibold text-gray-900 mb-1">No Properties Selected</h4>
+                    <p className="text-sm text-amber-800 mb-4">
+                      Campaign performance may be lower without property data. Adding properties enables:
+                    </p>
+                    <ul className="text-sm text-left text-gray-700 mb-4 inline-block">
+                      <li>• Rich visual previews with property images</li>
+                      <li>• Better targeting with location and pricing data</li>
+                      <li>• Enhanced AI content suggestions</li>
+                      <li>• Improved conversion tracking</li>
+                    </ul>
+                    <div className="mt-4">
+                      <button
+                        onClick={() => setShowPropertyModal(true)}
+                        className="inline-flex items-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Add Property Now
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

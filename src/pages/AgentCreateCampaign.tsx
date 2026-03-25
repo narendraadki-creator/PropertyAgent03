@@ -165,7 +165,7 @@ export default function AgentCreateCampaign() {
   const canProceed = () => {
     switch (currentStep) {
       case 1:
-        return formData.projectId && formData.title && formData.campaignType;
+        return formData.title && formData.campaignType;
       case 2:
         return formData.targetPlatforms.length > 0;
       case 3:
@@ -252,14 +252,14 @@ export default function AgentCreateCampaign() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Select Project <span className="text-red-500">*</span>
+                  Select Property <span className="text-gray-500 text-xs font-normal">(Optional)</span>
                 </label>
                 <select
                   value={formData.projectId}
                   onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                 >
-                  <option value="">Choose a project...</option>
+                  <option value="">No property selected</option>
                   {projects.map((project) => (
                     <option key={project.id} value={project.id}>
                       {project.name} - {project.location}
@@ -267,7 +267,41 @@ export default function AgentCreateCampaign() {
                   ))}
                 </select>
                 {projects.length === 0 && (
-                  <p className="text-sm text-gray-500 mt-2">No projects available. Please contact your manager.</p>
+                  <p className="text-sm text-gray-500 mt-2">No properties available. Please contact your manager.</p>
+                )}
+                {!formData.projectId && projects.length > 0 && (
+                  <div className="mt-3 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                    <p className="text-sm text-amber-800 font-medium mb-2">⚠️ No property selected. Campaign performance may be lower.</p>
+                    <p className="text-xs text-amber-700 mb-3">
+                      Selecting a property enables rich previews, AI suggestions, and better targeting.
+                    </p>
+                    {projects.length > 0 && (
+                      <div className="space-y-2">
+                        <p className="text-xs font-semibold text-gray-700">💡 Smart Property Suggestions:</p>
+                        {projects.slice(0, 3).map((project) => (
+                          <button
+                            key={project.id}
+                            onClick={() => setFormData({ ...formData, projectId: project.id })}
+                            className="w-full text-left bg-white border border-gray-200 rounded-lg p-2 hover:border-teal-500 hover:bg-teal-50 transition-colors"
+                          >
+                            <div className="flex items-center gap-2">
+                              <div className="flex-1">
+                                <p className="text-sm font-medium text-gray-900">{project.name}</p>
+                                <p className="text-xs text-gray-600">{project.location}</p>
+                              </div>
+                              <ArrowRight className="w-4 h-4 text-gray-400" />
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+                {formData.projectId && selectedProject && (
+                  <div className="mt-3 bg-green-50 border border-green-200 rounded-lg p-3">
+                    <p className="text-sm text-green-800 font-medium">✓ Property selected: Enhanced campaign features enabled</p>
+                    <p className="text-xs text-green-700 mt-1">Rich previews, AI suggestions, and better targeting are now available.</p>
+                  </div>
                 )}
               </div>
 
@@ -397,11 +431,11 @@ export default function AgentCreateCampaign() {
             </div>
           )}
 
-          {currentStep === 3 && selectedProject && (
+          {currentStep === 3 && (
             <div className="space-y-6">
               <h2 className="text-2xl font-bold text-gray-900">Generate Content</h2>
               <ShareableContentGenerator
-                project={selectedProject}
+                project={selectedProject || {}}
                 campaignType={formData.campaignType}
                 onContentGenerated={handleContentGenerated}
               />
@@ -429,11 +463,20 @@ export default function AgentCreateCampaign() {
                 </select>
               </div>
 
+              {!selectedProject && (
+                <div className="mb-4 bg-amber-50 border border-amber-200 rounded-lg p-4">
+                  <p className="text-sm text-amber-800 font-medium">⚠️ Limited Preview Mode</p>
+                  <p className="text-xs text-amber-700 mt-1">
+                    Without a property selected, previews won't include images or property-specific details. Select a property in Step 1 for rich previews.
+                  </p>
+                </div>
+              )}
+
               <SocialMediaPreview
                 platform={previewPlatform}
                 content={generatedContent}
-                imageUrl={selectedProject.image}
-                projectName={selectedProject.name}
+                imageUrl={selectedProject?.image}
+                projectName={selectedProject?.name}
               />
 
               <div>
